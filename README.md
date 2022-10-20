@@ -6,7 +6,7 @@
 
 ### :black_nib: 前  言
 
-[大数据学习路线认知]()
+[大数据学习路线认知](https://kdocs.cn/l/cf418WcENzMl)
 
 
 
