@@ -1,4 +1,6 @@
+# 🚀大数据学习之路
 
+ **🚀🚀🚀大数据学习路线🚊，主要内容为大数据技术内容如Hadoop🐘，蜂巢🐝，Hbase，Spark等内容，并包含数据仓库项目笔记等，👀👀👀并包含大量基础知识内容，如Java，SQL，Linux🎆🎆🎆**
 
 ![image-20221020220541141](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221020220541141.png)
 
@@ -25,6 +27,20 @@
 
 :two:[Java笔记](https://github.com/FGL12321/Node/tree/main/02_Java_Node)
 
+* 2.1 [Java程序基础](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
+* 2.2 [流程控制](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
+* 2.3 [面向对象](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
+* 2.4 [异常处理](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.5 [多线程](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.6 [常用类](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.7 [枚举](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.8 [集合](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.9 [泛型](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
+* 2.10 [IO流](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
+* 2.11 [网络编程](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
+* 2.12 [反射](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
+* 2.13 [设计模式](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
+
 :three:[人工智能笔记](https://github.com/FGL12321/Node/tree/main/03_AI_Node)
 
 :four:[竞赛笔记](https://github.com/FGL12321/Node/tree/main/04_Competition_Node)
@@ -32,6 +48,9 @@
 :five:[JavaWeb笔记](https://github.com/FGL12321/Node/tree/main/05_JavaWeb_Node)
 
 :six:[大数据项目笔记](https://github.com/FGL12321/Node/tree/main/06_Project_Node)
+
+* [离线数据仓库](https://github.com/FGL12321/Node/tree/main/06_Project_Node/DataWarehouse)
+* [电信客服项目](https://github.com/FGL12321/Node/blob/main/06_Project_Node/%E9%80%9A%E8%AF%9D%E8%AE%B0%E5%BD%95%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E7%94%B5%E5%95%86%E5%AE%A2%E6%9C%8D%E6%A1%88%E4%BE%8B%E7%AC%94%E8%AE%B0.md)
 
 :seven:[SQL笔记](https://github.com/FGL12321/Node/tree/main/07_SQL_Node)
 
