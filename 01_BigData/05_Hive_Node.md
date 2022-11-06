@@ -471,8 +471,7 @@ mysql> quit;
 **3）启动 beeline 客户端（需要多等待一会）**
 
 ```
-[atguigu@hadoop102 hive]$ bin/beeline -u jdbc:hive2://hadoop102:10000 -n 
-atguigu
+[atguigu@hadoop102 hive]$ bin/beeline -u jdbc:hive2://hadoop102:10000 -n fang
 ```
 
 **4）看到如下界面**
@@ -484,6 +483,19 @@ Driver: Hive JDBC (version 3.1.2)
 Transaction isolation: TRANSACTION_REPEATABLE_READ
 Beeline version 3.1.2 by Apache Hive
 0: jdbc:hive2://hadoop102:10000>
+```
+
+
+
+```xml
+<property>
+                <name>hadoop.proxyuser.fang.hosts</name>
+                <value>*</value>
+</property>
+<property>
+               <name>hadoop.proxyuser.fang.groups</name>
+               <value>*</value>
+</property>
 ```
 
 
@@ -561,8 +573,6 @@ Time taken: 0.076 seconds, Fetched: 1 row(s)
 
 # [第 4 章 DDL 数据定义	](#_Toc30153 )（21-28）
 
-
-
 ## 4.1创建数据库
 
 1)创建一个数据库，数据库在 HDFS 上的默认存储路径是/user/hive/warehouse/*.db、
@@ -596,7 +606,7 @@ hive> show databases;
 **2）过滤显示查询的数据库**
 
 ```
-hive> show databases like 'db_hive*'; OK
+hive> show databases like 'db_hive*'; 
 db_hive 
 db_hive_1
 ```
@@ -668,9 +678,17 @@ CREATE [EXTERNAL] TABLE [IF NOT EXISTS] table_nam
 
 当我们删除一个管理表时，Hive 也会删除这个表中数据
 
+![image-20221106110457444](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221106110457444.png)
+
 ### 4.5.2外部表
 
  Hive 并非认为其完全拥有这份数据。删除该表并不会删除掉这份数据，不过描述表的元数据信息会被删除掉。
+
+![image-20221106110538415](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221106110538415.png)
+
+![image-20221106110701277](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221106110701277.png)
+
+![image-20221106140330057](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221106140330057.png)
 
 ### 4.5.3管理表与外部表的相互转换
 

@@ -1,4 +1,4 @@
-# Hive的原理概述与安装
+# Hive概述与Mysql元数据配置
 
 [TOC]
 
@@ -137,56 +137,7 @@ source /etc/profile  //记得让环境变量生效
 [atguigu@hadoop102 hive]$ bin/schematool -dbType derby -initSchema
 ```
 
-### 3.2启动并使用Hive
-
-**1）启动 Hive**
-
-```
-[atguigu@hadoop102 hive]$ bin/hive
-```
-
-**2）使用 Hive**
-
-```
-hive> show databases;
-hive> show tables;
-hive> create table test(id int);
-hive> insert into test values(1);
-hive> select * from test;
-```
-
-**3）在 CRT 窗口中开启另一个窗口开启 Hive，在/tmp/<font color="red">自己的用户名</font> 目录下监控 hive.log 文件**
-
-我们启动两个hive客户端
-
-监控日志
-
-```
-tail -f hive.log
-```
-
-```python
-#derby默认只能单用户使用，因此开启两个客户端会报错
-Caused by: ERROR XSDB6: Another instance of Derby may have already booted 
-the database /opt/module/hive/metastore_db.
- at 
-org.apache.derby.iapi.error.StandardException.newException(Unknown 
-Source)
- at 
-org.apache.derby.iapi.error.StandardException.newException(Unknown
-Source)
- at 
-org.apache.derby.impl.store.raw.data.BaseDataFileFactory.privGetJBMSLockO
-nDB(Unknown Source)
- at 
-org.apache.derby.impl.store.raw.data.BaseDataFileFactory.run(Unknown 
-Source)
-...
-```
-
-​		<font color="red">原因在于 Hive 默认使用的元数据库为 derby，开启 Hive 之后就会占用元数据库，且不与其他客户端共享数据，所以我们需要将 Hive 的元数据地址改为 MySQL。</font>
-
-### 3.3hive的元数据与表数据
+### 3.2hive的元数据与表数据
 
 ​		大家都知道使用Hive的时候，Hive的元信息和数据是分开存储的。
 
@@ -341,48 +292,60 @@ mysql> flush privileges;
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://hadoop102:3306/metastore?useSSL=false</value>
+    </property>
 
- <!-- jdbc 连接的 URL -->
- <property>
- <name>javax.jdo.option.ConnectionURL</name>
- <value>jdbc:mysql://hadoop102:3306/metastore?useSSL=false</value>
-</property>
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.jdbc.Driver</value>
+    </property>
 
- <!-- jdbc 连接的 Driver-->
- <property>
- <name>javax.jdo.option.ConnectionDriverName</name>
- <value>com.mysql.jdbc.Driver</value>
-</property>
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>root</value>
+    </property>
 
-<!-- jdbc 连接的 username-->
- <property>
- <name>javax.jdo.option.ConnectionUserName</name>
- <value>root</value>
- </property>
- 
- <!-- jdbc 连接的 password -->
- <property>
- <name>javax.jdo.option.ConnectionPassword</name>
- <value>fgl123</value>
-</property>
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>fgl123</value>
+    </property>
 
- <!-- Hive 元数据存储版本的验证 -->
- <property>
- <name>hive.metastore.schema.verification</name>
- <value>false</value>
-</property>
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+    </property>
 
- <!--元数据存储授权-->
- <property>
- <name>hive.metastore.event.db.notification.api.auth</name>
- <value>false</value>
- </property>
- 
- <!-- Hive 默认在 HDFS 的工作目录 -->
- <property>
- <name>hive.metastore.warehouse.dir</name>
- <value>/user/hive/warehouse</value>
- </property>
+    <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>false</value>
+    </property>
+
+    <property>
+    <name>hive.server2.thrift.port</name>
+    <value>10000</value>
+    </property>
+
+    <property>
+        <name>hive.server2.thrift.bind.host</name>
+        <value>hadoop102</value>
+    </property>
+
+    <property>
+        <name>hive.metastore.event.db.notification.api.auth</name>
+        <value>false</value>
+    </property>
+    
+    <property>
+        <name>hive.cli.print.header</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.cli.print.current.db</name>
+        <value>true</value>
+    </property>
 </configuration>
 ```
 
@@ -402,81 +365,27 @@ mysql> quit;
    **（4）初始化 Hive 元数据库**
 
 ```
-[atguigu@hadoop102 software]$ schematool -initSchema -dbType mysql -verbose
+[atguigu@hadoop102 conf]$ schematool -initSchema -dbType mysql -verbose
 ```
-
-
-
-****
-
-<font color="red">**使用元数据服务的方式访问 Hive**</font>
-
-
-
-**1）在 hive-site.xml 文件中添加如下配置信息**
-
-```
- <!-- 指定存储元数据要连接的地址 -->
- <property>
- <name>hive.metastore.uris</name>
- <value>thrift://hadoop102:8020</value>
- </property>
-```
-
-**2）启动 metastore**
-
-```
-[atguigu@hadoop202 hive]$ hive --service metastore
-2020-04-24 16:58:08: Starting Hive Metastore Server
-注意: 启动后窗口不能再操作，需打开一个新的 shell 窗口做别的操作
-```
-
-**3）启动 hive**
-
-```
-[atguigu@hadoop202 hive]$ bin/hive
-```
-
-
-
----
 
 
 
 <font color="red">**使用 JDBC 方式访问 Hive**</font>
 
-
-
-**1）在 hive-site.xml 文件中添加如下配置信息**
-
-```
-<!-- 指定 hiveserver2 连接的 host -->
- <property>
- <name>hive.server2.thrift.bind.host</name>
- <value>hadoop102</value>
- </property>
- 
- <!-- 指定 hiveserver2 连接的端口号 -->
- <property>
- <name>hive.server2.thrift.port</name>
- <value>10000</value>
- </property>
-```
-
-**2）启动 hiveserver2**
+**1）启动 hiveserver2**
 
 ```
 [atguigu@hadoop102 hive]$ bin/hive --service hiveserver2
 ```
 
-**3）启动 beeline 客户端（需要多等待一会）**
+**2）启动 beeline 客户端（需要多等待一会）**
 
 ```
 [atguigu@hadoop102 hive]$ bin/beeline -u jdbc:hive2://hadoop102:10000 -n 
 atguigu
 ```
 
-**4）看到如下界面**
+**3）看到如下界面**
 
 ```
 Connecting to jdbc:hive2://hadoop102:10000
@@ -486,5 +395,4 @@ Transaction isolation: TRANSACTION_REPEATABLE_READ
 Beeline version 3.1.2 by Apache Hive
 0: jdbc:hive2://hadoop102:10000>
 ```
-
 

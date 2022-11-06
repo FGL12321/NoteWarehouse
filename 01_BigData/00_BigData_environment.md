@@ -176,7 +176,7 @@ done
 [atguigu@hadoop102 bin]$ chmod +x xsync
 
 （c）测试脚本
-[atguigu@hadoop102 ~]$ xsync /home/atguigu/bin
+[atguigu@hadoop102 ~]$ xsync /home/fang/bin
 
 （d）将脚本复制到/bin中，以便全局调用
 [atguigu@hadoop102 bin]$ sudo cp xsync /bin/
@@ -228,7 +228,7 @@ hadoop version Hadoop 3.1.3
     <!-- 配置HDFS网页登录使用的静态用户为atguigu -->
     <property>
         <name>hadoop.http.staticuser.user</name>
-        <value>atguigu</value>  ！！！记得换成自己的用户名
+        <value>fang</value>  
     </property>
 </configuration>
 ```
@@ -349,7 +349,7 @@ hadoop104
 **（7）编写myhadoop.sh脚本**
 
 ```
-[atguigu@hadoop102 ~]$ cd /home/atguigu/bin
+[atguigu@hadoop102 ~]$ cd /home/fang/bin
 [atguigu@hadoop102 bin]$ vim myhadoop.sh
 
 #!/bin/bash
@@ -394,7 +394,7 @@ esac
 
 ```
 [atguigu@hadoop102 ~]$ cd /home/atguigu/bin
-[atguigu@hadoop102 bin]$ vim jpsal
+[atguigu@hadoop102 bin]$ vim jpsall
 
 #!/bin/bash
 
@@ -406,7 +406,7 @@ done
 
 添加脚本并分发脚本
 [atguigu@hadoop102 bin]$ chmod +x jpsall
-[atguigu@hadoop102 ~]$ xsync /home/atguigu/bin/
+[atguigu@hadoop102 ~]$ xsync /home/fang/bin/
 在103 104上添加执行权限
 ```
 
