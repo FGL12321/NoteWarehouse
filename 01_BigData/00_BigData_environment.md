@@ -1,10 +1,10 @@
-# 大数据集群配置
+# 🚀🚀🚀大数据集群配置🚀🚀🚀
 
 [TOC]
 
 
 
-# 1.0 Hadoop安装
+# 1.0 🛹Hadoop安装
 
 ![1659765478218](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1659765478218.png)
 
@@ -428,7 +428,7 @@ http://hadoop102:19888/jobhistory
 
 ==如果节点都正常启动，页面无法访问，检查hosts文件是否修改，如果无误，可以重写启动，并进行测试==
 
-# 2.0 zookeeper安装
+# 2.0✈️ zookeeper安装
 
 ## 2.1解压安装
 
@@ -539,7 +539,7 @@ esac
 [zk: hadoop102:2181(CONNECTED) 0] ls /
 ```
 
-# 3.0HBase安装
+# 3.0🏈HBase安装
 
 ​		HBase 通过 Zookeeper 来做 master 的高可用、记录 RegionServer 的部署信息、并且存储有 meta 表的位置信息。 
 
@@ -558,7 +558,9 @@ esac
 [atguigu@hadoop102 ~]$ sudo vim /etc/profile.d/my_env.sh
 
 添加
-：
+#HBASE_HOME
+export HBASE_HOME=/opt/module/hbase
+export PATH=$PATH:$HBASE_HOME/bin
 
 3）使用 source 让配置的环境变量生效
 [atguigu@hadoop102 module]$ source /etc/profile.d/my_env.sh
@@ -648,7 +650,7 @@ xsync hbase/
 
 
 
-# 4.0 Flume安装
+# 4.0 🏰Flume安装
 
 ## 4.1解压安装
 
@@ -712,7 +714,7 @@ a1.sinks.k1.channel = c1
 
 ==到这就可以了，项目中会继续进行配置==
 
-# 5.0 Kafka安装
+# 5.0 😗Kafka安装
 
 ## 5.1解压安装配置环境变量
 
@@ -759,7 +761,7 @@ export PATH=$PATH:$KAFKA_HOME/bin
 [atguigu@hadoop102 module]$ source /etc/profile
 
 分发并刷新
-[atguigu@hadoop102 module]$ sudo /home/atguigu/bin/xsync /etc/profile.d/my_env.sh
+[atguigu@hadoop102 module]$ sudo /home/fang/bin/xsync /etc/profile.d/my_env.sh
 [atguigu@hadoop103 module]$ source /etc/profile
 [atguigu@hadoop104 module]$ source /etc/profile
 ```
@@ -804,7 +806,7 @@ esac
 
 ```
 
-# 6.0Redis环境配置
+# 6.0🌍Redis环境配置
 
 **1.将软件包上传到/opt/softwere目录下，解压到/opt/modul下**
 
@@ -909,7 +911,7 @@ make install
 
 ![1660722694207](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1660722694207.png)
 
-# 7.0MySql安装
+# 7.0 🚜MySql安装
 
 **1）检查当前系统是否安装过 MySQL**
 
@@ -1011,7 +1013,7 @@ mysql> flush privileges;
 
 ![1660702611954](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1660702611954.png)
 
-# 8.0Tomcat安装
+# 8.0⚽Tomcat安装
 
 **（1）上传Tomcat文件包到/opt/softwere**
 
@@ -1072,6 +1074,179 @@ mv  apache-tomcat-8.5.75 /opt/module
 
 
 
+
+
+# 9.0 🥰Hive的安装
+
+## 9.1Hive安装部署
+
+### 9.1.1Hive安装部署
+
+（1）把apache-hive-3.1.2-bin.tar.gz上传到Linux的/opt/software目录下
+
+（2）解压apache-hive-3.1.2-bin.tar.gz到/opt/module/目录下面
+
+```
+[atguigu@hadoop102 software]$ tar -zxvf /opt/software/apache-hive-3.1.2-bin.tar.gz -C /opt/module/
+```
+
+（3）修改apache-hive-3.1.2-bin.tar.gz的名称为hive
+
+```
+[atguigu@hadoop102 software]$ mv /opt/module/apache-hive-3.1.2-bin/ /opt/module/hive
+```
+
+（4）修改/etc/profile.d/my_env.sh，添加环境变量
+
+```
+[atguigu@hadoop102 software]$ sudo vim /etc/profile.d/my_env.sh
+```
+
+添加内容
+
+```
+#HIVE_HOME
+export HIVE_HOME=/opt/module/hive
+export PATH=$PATH:$HIVE_HOME/bin
+```
+
+重启Xshell对话框或者source一下 /etc/profile.d/my_env.sh文件，使环境变量生效
+
+```
+[atguigu@hadoop102 software]$ source /etc/profile.d/my_env.sh
+```
+
+（5）解决日志Jar包冲突，进入/opt/module/hive/lib目录
+
+```
+[atguigu@hadoop102 lib]$ mv log4j-slf4j-impl-2.10.0.jar log4j-slf4j-impl-2.10.0.jar.bak
+```
+
+
+
+## 9.2Hive元数据配置到Mysql
+
+### 9.2.1拷贝驱动
+
+将MySQL的JDBC驱动拷贝到Hive的lib目录下
+
+```
+[atguigu@hadoop102 lib]$ cp /opt/software/mysql-connector-java-5.1.27.jar /opt/module/hive/lib/
+```
+
+### 9.2.2配置Metastore到Mysql
+
+（1）在$HIVE_HOME/conf目录下新建hive-site.xml文件
+
+```
+[atguigu@hadoop102 conf]$ vim hive-site.xml
+```
+
+（2）添加如下内容
+
+```
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://hadoop102:3306/metastore?useSSL=false</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.jdbc.Driver</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>root</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>fgl123</value>
+    </property>
+
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>/user/hive/warehouse</value>
+    </property>
+
+    <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>false</value>
+    </property>
+
+    <property>
+    <name>hive.server2.thrift.port</name>
+    <value>10000</value>
+    </property>
+
+    <property>
+        <name>hive.server2.thrift.bind.host</name>
+        <value>hadoop102</value>
+    </property>
+
+    <property>
+        <name>hive.metastore.event.db.notification.api.auth</name>
+        <value>false</value>
+    </property>
+    
+    <property>
+        <name>hive.cli.print.header</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.cli.print.current.db</name>
+        <value>true</value>
+    </property>
+</configuration>
+```
+
+## 9.3启动Hive
+
+### 9.3.1初始化源数据库
+
+（1）登陆MySQL
+
+```
+[atguigu@hadoop102 conf]$ mysql -uroot -p000000
+```
+
+（2）新建Hive元数据库
+
+```
+mysql> create database metastore;
+mysql> quit;
+```
+
+（3）初始化Hive元数据库
+
+```
+[atguigu@hadoop102 conf]$ schematool -initSchema -dbType mysql -verbose
+```
+
+### 9.3.2启动Hive客户端
+
+（1）启动Hive客户端
+
+```
+[atguigu@hadoop102 hive]$ bin/hive
+```
+
+（2）查看一下数据库
+
+```
+hive (default)> show databases;
+OK
+database_name
+default
+```
+
+
+
 **集群环境查看**
 
 此时输入：jpsall  可查看到一下节点相应信息
@@ -1089,9 +1264,7 @@ mv  apache-tomcat-8.5.75 /opt/module
 |                  |  HRegionServer   |  HRegionServer  |   HRegionServer   |
 |                  |       jsp        |       jsp       |        jsp        |
 
-![1660900727767](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1660900727767.png)
-
-集群停止脚本：**
+**集群停止脚本：**
 
 ```
 Hadoop启停：
@@ -1123,3 +1296,250 @@ http://hadoop102:16010/master-status
 
 ==必须先关闭KafKa再关闭Zookeeper==
 
+10.0
+
+# 10.0🚀Sqoop安装
+
+## 10.1 下载并解压	
+
+1）sqoop官网地址：[http://sqoop.apache.org](http://sqoop.apache.org/docs/1.4.7/index.html)
+
+2）下载地址：http://mirrors.hust.edu.cn/apache/sqoop/1.4.6/
+
+3）上传安装包sqoop-1.4.6.bin__hadoop-2.0.4-alpha.tar.gz到hadoop102的/opt/software路径中
+
+4）解压sqoop安装包到指定目录，如：
+
+```
+[atguigu@hadoop102 software]$ tar -zxf sqoop-1.4.6.bin__hadoop-2.0.4-alpha.tar.gz -C /opt/module/
+```
+
+5）解压sqoop安装包到指定目录，如：
+
+```
+[atguigu@hadoop102 module]$ mv sqoop-1.4.6.bin__hadoop-2.0.4-alpha/ sqoop
+```
+
+## 10.2 修改配置文件	
+
+1）进入到/opt/module/sqoop/conf目录，重命名配置文件
+
+```
+[atguigu@hadoop102 conf]$ mv sqoop-env-template.sh sqoop-env.sh
+```
+
+2）修改配置文件
+
+```
+[atguigu@hadoop102 conf]$ vim sqoop-env.sh 
+```
+
+增加如下内容
+
+```
+export HADOOP_COMMON_HOME=/opt/module/hadoop-3.1.3
+export HADOOP_MAPRED_HOME=/opt/module/hadoop-3.1.3
+export HIVE_HOME=/opt/module/hive
+export ZOOKEEPER_HOME=/opt/module/zookeeper-3.5.7
+export ZOOCFGDIR=/opt/module/zookeeper-3.5.7/conf
+```
+
+## 10.3 拷贝JDBC驱动	
+
+1）将mysql-connector-java-5.1.48.jar 上传到/opt/software路径
+
+2）进入到/opt/software/路径，拷贝jdbc驱动到sqoop的lib目录下。
+
+```
+[atguigu@hadoop102 software]$ cp mysql-connector-java-5.1.48.jar /opt/module/sqoop/lib/
+```
+
+## 10.4 验证Sqoop	
+
+（1）我们可以通过某一个command来验证sqoop配置是否正确：
+
+```
+[atguigu@hadoop102 sqoop]$ bin/sqoop help
+```
+
+（2）出现一些Warning警告（警告信息已省略），并伴随着帮助命令的输出：
+
+```
+Available commands:
+  codegen            Generate code to interact with database records
+  create-hive-table     Import a table definition into Hive
+  eval               Evaluate a SQL statement and display the results
+  export             Export an HDFS directory to a database table
+  help               List available commands
+  import             Import a table from a database to HDFS
+  import-all-tables     Import tables from a database to HDFS
+  import-mainframe    Import datasets from a mainframe server to HDFS
+  job                Work with saved jobs
+  list-databases        List available databases on a server
+  list-tables           List available tables in a database
+  merge              Merge results of incremental imports
+  metastore           Run a standalone Sqoop metastore
+  version            Display version information
+```
+
+## 10.5 测试Sqoop是否能够成功连接数据库	
+
+```
+[atguigu@hadoop102 sqoop]$ bin/sqoop list-databases --connect jdbc:mysql://hadoop102:3306/ --username root --password fgl123
+```
+
+出现如下输出：
+
+```
+information_schema
+metastore
+mysql
+oozie
+performance_schema
+```
+
+## 10.6 Sqoop基本使用	
+
+将mysql中user_info表数据导入到HDFS的/test路径
+
+```
+bin/sqoop import \
+--connect jdbc:mysql://hadoop102:3306/gmall \
+--username root \
+--password fgl123 \
+--table user_info \
+--columns id,login_name \
+--where "id>=10 and id<=30" \
+--target-dir /test \
+--delete-target-dir \
+--fields-terminated-by '\t' \
+--num-mappers 2 \
+--split-by id
+```
+
+# 11.0😃Spark-yarn模式部署
+
+
+
+​		**独立部署（Standalone）模式由 Spark 自身提供计算资源，无需其他框架提供资源。这种方式降低了和其他第三方资源框架的耦合性，独立性非常强。但是你也要记住，Spark 主要是计算框架，而不是资源调度框架，所以本身提供的资源调度并不是它的强项，所以还是和其他专业的资源调度框架集成会更靠谱一些。所以接下来我们来学习在强大的 Yarn 环境下 Spark 是如何工作的（其实是因为在国内工作中，Yarn 使用的非常多）。**
+
+## 11.1 解压缩文件
+
+将 spark-3.0.0-bin-hadoop3.2.tgz 文件上传到 linux 并解压缩，放置在指定位置。
+
+```
+tar -zxvf spark-3.0.0-bin-hadoop3.2.tgz -C /opt/module
+cd /opt/module 
+mv spark-3.0.0-bin-hadoop3.2 spark-yarn
+```
+
+## 11.2 修改配置文件
+
+1) 修改 hadoop 配置文件/opt/module/hadoop/etc/hadoop/yarn-site.xml, 并分发
+
+```
+<!--是否启动一个线程检查每个任务正使用的物理内存量，如果任务超出分配值，则直接将其杀掉，默认是 true -->
+<property>
+ <name>yarn.nodemanager.pmem-check-enabled</name>
+ <value>false</value>
+</property>
+<!--是否启动一个线程检查每个任务正使用的虚拟内存量，如果任务超出分配值，则直接将其杀掉，默认是 true -->
+<property>
+ <name>yarn.nodemanager.vmem-check-enabled</name>
+ <value>false</value>
+</property>
+```
+
+2) 修改 conf/spark-env.sh，添加 JAVA_HOME 和 YARN_CONF_DIR 配置
+
+```
+ spark-env.sh.template spark-env.sh
+
+export JAVA_HOME=/opt/module/jdk1.8.0_212
+YARN_CONF_DIR=/opt/module/hadoop-3.1.3/etc/hadoop
+```
+
+## 11.3 启动 HDFS 以及 YARN 集群
+
+自己启动hadoop😃
+
+## 11.4 提交应用
+
+```
+bin/spark-submit \
+--class org.apache.spark.examples.SparkPi \
+--master yarn \
+--deploy-mode cluster \
+./examples/jars/spark-examples_2.12-3.0.0.jar \
+10
+```
+
+查看 http://linux2:8088 页面，点击 History，查看历史页面
+
+![1659444089612](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1659444089612.png)
+
+## 11.5 配置历史服务器
+
+3.3.5 配置历史服务器 
+
+1) 修改 spark-defaults.conf.template 文件名为 spark-defaults.conf
+
+```
+mv spark-defaults.conf.template spark-defaults.conf
+```
+
+2) 修改 spark-default.conf 文件，配置日志存储路径
+
+```
+spark.eventLog.enabled true
+spark.eventLog.dir hdfs://hadoop102:8020/directory
+```
+
+注意：需要启动 hadoop 集群，HDFS 上的目录需要提前存在。
+
+```
+[root@linux1 hadoop]# sbin/start-dfs.sh
+[root@linux1 hadoop]# hadoop fs -mkdir /directory
+```
+
+3) 修改 spark-env.sh 文件, 添加日志配置
+
+```
+export SPARK_HISTORY_OPTS="
+-Dspark.history.ui.port=18080 
+-Dspark.history.fs.logDirectory=hdfs://hadoop102:8020/directory 
+-Dspark.history.retainedApplications=30"
+```
+
+⚫ 参数 1 含义：WEB UI 访问的端口号为 18080
+⚫ 参数 2 含义：指定历史服务器日志存储路径
+⚫ 参数 3 含义：指定保存 Application 历史记录的个数，如果超过这个值，旧的应用程序
+信息将被删除，这个是内存中的应用数，而不是页面上显示的应用数。
+
+4) 修改 spark-defaults.conf
+
+```
+spark.yarn.historyServer.address=hadoop102:18080
+spark.history.ui.port=18080
+```
+
+5) 启动历史服务
+
+```
+sbin/start-history-server.sh 
+```
+
+6) 重新提交应用
+
+```
+bin/spark-submit \
+--class org.apache.spark.examples.SparkPi \
+--master yarn \
+--deploy-mode client \
+./examples/jars/spark-examples_2.12-3.0.0.jar \
+10
+```
+
+7) Web 页面查看日志：http://hadoop103:8088
+
+![1659444177150](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1659444177150.png)

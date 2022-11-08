@@ -89,103 +89,9 @@
 
 ​		由于 Hive 建立在集群上并可以利用 MapReduce 进行并行计算，因此可以支持很大规模的数据；对应的，数据库可以支持的数据规模较小。
 
-# [第 2 章 Hive 安装	](#_Toc13557 )（6-17）
-
-## 2.1Hive的安装
-
-**1）把 apache-hive-3.1.2-bin.tar.gz 上传到 linux 的/opt/software 目录下**
-
-**2）解压 apache-hive-3.1.2-bin.tar.gz 到/opt/module/目录下面**
-
-```
-[atguigu@hadoop102 software]$ tar -zxvf /opt/software/apache-hive-3.1.2-bin.tar.gz -C /opt/module/
-```
-
-**3）修改 apache-hive-3.1.2-bin.tar.gz 的名称为 hive**
-
-```
-mv /opt/module/apache-hive-3.1.2-bin/ /opt/module/hive
-```
-
-**4）修改/etc/profile.d/my_env.sh，添加环境变量**
-
-```
-sudo vim /etc/profile.d/my_env.sh
-```
-
-**5）添加内容**
-
-```java
-#HIVE_HOME
-export HIVE_HOME=/opt/module/hive
-export PATH=$PATH:$HIVE_HOME/bin
 
 
-source /etc/profile  //记得让环境变量生效
-```
-
-**6）解决日志 Jar 包冲突**
-
-```
-[atguigu@hadoop102 software]$ mv $HIVE_HOME/lib/log4j-slf4j-impl-2.10.0.jar $HIVE_HOME/lib/log4j-slf4j-impl-2.10.0.bak
-```
-
-**7）初始化元数据库**
-
-```
-[atguigu@hadoop102 hive]$ bin/schematool -dbType derby -initSchema
-```
-
-## 2.2启动并使用Hive
-
-**1）启动 Hive**
-
-```
-[atguigu@hadoop102 hive]$ bin/hive
-```
-
-**2）使用 Hive**
-
-```
-hive> show databases;
-hive> show tables;
-hive> create table test(id int);
-hive> insert into test values(1);
-hive> select * from test;
-```
-
-**3）在 CRT 窗口中开启另一个窗口开启 Hive，在/tmp/<font color="red">自己的用户名</font> 目录下监控 hive.log 文件**
-
-我们启动两个hive客户端
-
-监控日志
-
-```
-tail -f hive.log
-```
-
-```python
-#derby默认只能单用户使用，因此开启两个客户端会报错
-Caused by: ERROR XSDB6: Another instance of Derby may have already booted 
-the database /opt/module/hive/metastore_db.
- at 
-org.apache.derby.iapi.error.StandardException.newException(Unknown 
-Source)
- at 
-org.apache.derby.iapi.error.StandardException.newException(Unknown
-Source)
- at 
-org.apache.derby.impl.store.raw.data.BaseDataFileFactory.privGetJBMSLockO
-nDB(Unknown Source)
- at 
-org.apache.derby.impl.store.raw.data.BaseDataFileFactory.run(Unknown 
-Source)
-...
-```
-
-​		<font color="red">原因在于 Hive 默认使用的元数据库为 derby，开启 Hive 之后就会占用元数据库，且不与其他客户端共享数据，所以我们需要将 Hive 的元数据地址改为 MySQL。</font>
-
-## 2.3hive的元数据与表数据
+# 第2章hive的元数据与表数据
 
 ​		大家都知道使用Hive的时候，Hive的元信息和数据是分开存储的。
 
@@ -218,285 +124,7 @@ Source)
 ​		不再使用内嵌的Derby作为元数据的存储介质，而是使用其他数据库比如MySQL来存储元数据。hive服务和metastore服务运行在同一个进程中，mysql是单独的进程，可以同一台机器，也可以在远程机器上。
 这种方式是一个多用户的模式，运行多个用户client连接到一个数据库中。这种方式一般作为公司内部同时使用Hive。每一个用户必须要有对MySQL的访问权利，即每一个客户端使用者需要知道MySQL的用户名和密码才行。
 
-## 2.4 Mysql的安装
 
-**1）检查当前系统是否安装过 MySQL**
-
-```
-[atguigu@hadoop102 ~]$ rpm -qa|grep mariadb
-mariadb-libs-5.5.56-2.el7.x86_64 
-//如果存在通过如下命令卸载
-[atguigu @hadoop102 ~]$ sudo rpm -e --nodeps mariadb-libs
-```
-
-**2）将 MySQL 安装包拷贝到/opt/software 目录下**
-
-```
-[atguigu @hadoop102 software]# ll
-总用量 528384
--rw-r--r--. 1 root root 609556480 3 月 21 15:41 mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar
-```
-
-**3）解压 MySQL 安装包**
-
-```
-[atguigu @hadoop102 software]# tar -xf mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar
-```
-
-**4）在安装目录下执行 rpm 安装**
-
-```
-[atguigu @hadoop102 software]$ 
-sudo rpm -ivh mysql-community-common-5.7.28-1.el7.x86_64.rpm
-sudo rpm -ivh mysql-community-libs-5.7.28-1.el7.x86_64.rpm
-sudo rpm -ivh mysql-community-libs-compat-5.7.28-1.el7.x86_64.rpm
-sudo rpm -ivh mysql-community-client-5.7.28-1.el7.x86_64.rpm
-sudo rpm -ivh mysql-community-server-5.7.28-1.el7.x86_64.rpm
-```
-
-​		==过程中出现报错则说明需要安装依赖，通过 yum 安装缺少的依赖,然后重新安装 mysql-community-server-5.7.28-1.el7.x86_64 即可==
-
-```
-[atguigu@hadoop102 software] yum install -y libaio
-```
-
-**5）删除/etc/my.cnf 文件中 datadir 指向的目录下的所有内容,如果有内容的情况下:**（一般省略）
-
- **查看 datadir 的值：** 
-
-```
-[mysqld]
-datadir=/var/lib/mysql
-```
-
-**删除/var/lib/mysql 目录下的所有内容（一般没有任何东西）:**
-
-```
-[atguigu @hadoop102 mysql]# cd /var/lib/mysql
-[atguigu @hadoop102 mysql]# sudo rm -rf ./* //注意执行命令的位置
-```
-
-**6）初始化数据库**
-
-```
-[atguigu @hadoop102 opt]$ sudo mysqld --initialize --user=mysql
-```
-
-**7）查看临时生成的 root 用户的密码**
-
-```
-[atguigu @hadoop102 opt]$ sudo cat /var/log/mysqld.log       jZu%i>4hD
-```
-
-![1660702382426](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1660702382426.png)
-
-**8）启动 MySQL 服务**
-
-```
-[atguigu @hadoop102 opt]$ sudo systemctl start mysqld
-```
-
-**9）登录 MySQL 数据库**
-
-```
-[atguigu @hadoop102 opt]$ mysql -uroot -p
-Enter password: 输入临时生成的密码
-```
-
-**10）必须先修改 root 用户的密码,否则执行其他的操作会报错**
-
-```
-mysql> set password = password("fgl123");
-```
-
-**11）修改 mysql 库下的 user 表中的 root 用户允许任意 ip 连接**
-
-```
-mysql> update mysql.user set host='%' where user='root';
-mysql> flush privileges;
-```
-
-**12）使用本机Navicat连接远程数据库**
-
-![1660702611954](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1660702611954.png)
-
-## 2.5配置Hive与Mysql
-
-**1）将mysql驱动拷贝到hive的lib包下**
-
-```
-[atguigu@hadoop102 software]$ cp /opt/software/mysql-connector-java-5.1.37.jar $HIVE_HOME/lib
-```
-
-**2）配置Metastore到Mysql**
-
-​	**（1）在$HIVE_HOME/conf 目录下新建 hive-site.xml 文件**
-
-```
-[atguigu@hadoop102 software]$ vim $HIVE_HOME/conf/hive-site.xml
-```
-
-```
-<?xml version="1.0"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-<configuration>
-
- <!-- jdbc 连接的 URL -->
- <property>
- <name>javax.jdo.option.ConnectionURL</name>
- <value>jdbc:mysql://hadoop102:3306/metastore?useSSL=false</value>
-</property>
-
- <!-- jdbc 连接的 Driver-->
- <property>
- <name>javax.jdo.option.ConnectionDriverName</name>
- <value>com.mysql.jdbc.Driver</value>
-</property>
-
-<!-- jdbc 连接的 username-->
- <property>
- <name>javax.jdo.option.ConnectionUserName</name>
- <value>root</value>
- </property>
- 
- <!-- jdbc 连接的 password -->
- <property>
- <name>javax.jdo.option.ConnectionPassword</name>
- <value>fgl123</value>
-</property>
-
- <!-- Hive 元数据存储版本的验证 -->
- <property>
- <name>hive.metastore.schema.verification</name>
- <value>false</value>
-</property>
-
- <!--元数据存储授权-->
- <property>
- <name>hive.metastore.event.db.notification.api.auth</name>
- <value>false</value>
- </property>
- 
- <!-- Hive 默认在 HDFS 的工作目录 -->
- <property>
- <name>hive.metastore.warehouse.dir</name>
- <value>/user/hive/warehouse</value>
- </property>
-</configuration>
-```
-
-   **（2）登陆 MySQL**
-
-```
-[atguigu@hadoop102 software]$ mysql -uroot -pfgl123
-```
-
-   **（3）新建 Hive 元数据库**
-
-```
-mysql> create database metastore;
-mysql> quit;
-```
-
-   **（4）初始化 Hive 元数据库**
-
-```
-[atguigu@hadoop102 software]$ schematool -initSchema -dbType mysql -verbose
-```
-
-
-
-****
-
-<font color="red">**使用元数据服务的方式访问 Hive**</font>
-
-
-
-**1）在 hive-site.xml 文件中添加如下配置信息**
-
-```
- <!-- 指定存储元数据要连接的地址 -->
- <property>
- <name>hive.metastore.uris</name>
- <value>thrift://hadoop102:8020</value>
- </property>
-```
-
-**2）启动 metastore**
-
-```
-[atguigu@hadoop202 hive]$ hive --service metastore
-2020-04-24 16:58:08: Starting Hive Metastore Server
-注意: 启动后窗口不能再操作，需打开一个新的 shell 窗口做别的操作
-```
-
-**3）启动 hive**
-
-```
-[atguigu@hadoop202 hive]$ bin/hive
-```
-
-
-
----
-
-
-
-<font color="red">**使用 JDBC 方式访问 Hive**</font>
-
-
-
-**1）在 hive-site.xml 文件中添加如下配置信息**
-
-```
-<!-- 指定 hiveserver2 连接的 host -->
- <property>
- <name>hive.server2.thrift.bind.host</name>
- <value>hadoop102</value>
- </property>
- 
- <!-- 指定 hiveserver2 连接的端口号 -->
- <property>
- <name>hive.server2.thrift.port</name>
- <value>10000</value>
- </property>
-```
-
-**2）启动 hiveserver2**
-
-```
-[atguigu@hadoop102 hive]$ bin/hive --service hiveserver2
-```
-
-**3）启动 beeline 客户端（需要多等待一会）**
-
-```
-[atguigu@hadoop102 hive]$ bin/beeline -u jdbc:hive2://hadoop102:10000 -n fang
-```
-
-**4）看到如下界面**
-
-```
-Connecting to jdbc:hive2://hadoop102:10000
-Connected to: Apache Hive (version 3.1.2)
-Driver: Hive JDBC (version 3.1.2)
-Transaction isolation: TRANSACTION_REPEATABLE_READ
-Beeline version 3.1.2 by Apache Hive
-0: jdbc:hive2://hadoop102:10000>
-```
-
-
-
-```xml
-<property>
-                <name>hadoop.proxyuser.fang.hosts</name>
-                <value>*</value>
-</property>
-<property>
-               <name>hadoop.proxyuser.fang.groups</name>
-               <value>*</value>
-</property>
-```
 
 
 
@@ -795,13 +423,17 @@ hive (default)> drop table dept;
 1. **创建一张表**
 
    ```
-   hive (default)> create table student(id string, name string) row format delimited fields terminated by '\t';
+   hive (default)> 
+   create table student(id string, name string) 
+   row format delimited 
+   fields terminated by '\t';
    ```
 
 2. **加载本地文件到 hive**
 
    ```
-   hive (default)> load data local inpath '/opt/module/hive/datas/student.txt' into table default.student;
+   hive (default)> 
+   load data local inpath '/opt/module/hive/datas/student.txt' into table default.student;
    ```
 
 3. **加载 HDFS 文件到 hive 中**
@@ -1160,8 +792,7 @@ hive (default)> select * from emp distribute by deptno sort by deptno;
 
 ```
 hive (default)> create table 
-dept_partition( deptno int, dname string,
-)
+dept_partition( deptno int, dname string,)
 partitioned by (day string)
 row format delimited fields terminated by '\t';
 ```
