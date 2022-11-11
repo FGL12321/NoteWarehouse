@@ -110,7 +110,6 @@ import java.io.IOException;
 
 
 public class HbaseConnection{
-
     public static Connection connection=null;  //声明一个静态属性
     static {
 
@@ -140,7 +139,6 @@ public class HbaseConnection{
         //在main线程的最后记得关闭连接
         HbaseConnection.closeConnection();
     }
-
 }
 ```
 

@@ -381,7 +381,6 @@ hbase:027:0> deleteall 'bigdata:student','1001','info:name'
             <artifactId>javax.el</artifactId>
             <version>3.0.1-b06</version>
         </dependency>
-
     </dependencies>
 ```
 
