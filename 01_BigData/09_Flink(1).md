@@ -1,6 +1,6 @@
 [TOC]
 
-# 第一章:F link简介
+# 第1章:F link简介
 
 ## 1.1Flink是什么
 
@@ -88,7 +88,7 @@ Flink 几大模块
 ⚫ 高可用。本身高可用的设置，加上与 K8s，YARN 和 Mesos 的紧密集成，再加上从故障中快速恢复和动态扩展任务的能力，Flink 能做到以极少的停机时间 7×24 全天候运行。
 ⚫ 能够更新应用程序代码并将作业（jobs）迁移到不同的 Flink 集群，而不会丢失应用程序的状态。
 
-# 第二章：Flink快速上手
+# 第2章：Flink快速上手
 
 ## 2.1创建项目
 
@@ -1970,56 +1970,1419 @@ public class ShuffleTest {
 
 ## 5.4 输出算子（Sink）
 
+![image-20221117140235397](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221117140235397.png)
+
 ### 5.4.1 连接到外部系统
-
-
 
 ### 5.4.2 输出到文件
 
+```java
+package com.fang.chapter05;
 
+import org.apache.flink.api.common.serialization.SimpleStringEncoder;
+import org.apache.flink.core.fs.Path;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
+import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
+import java.util.concurrent.TimeUnit;
+
+//并行写入的效果
+public class SinkToFileTest {
+    public static void main(String[] args) throws Exception {
+
+
+
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        env.setParallelism(4);
+
+        DataStreamSource<Event> stream3 = env.fromElements(
+                new Event("Marry", "./home", 1000L),
+                new Event("Marry", "./home", 1200L),
+                new Event("Bob", "./prod?id=1", 1000L),
+                new Event("Bob", "./home", 3500L),
+                new Event("Bob", "./prod?id=2", 3200L)
+        );
+
+
+        StreamingFileSink<String> fileSink = StreamingFileSink.<String>forRowFormat(new Path("./output"),
+                new SimpleStringEncoder<>("UTF-8"))
+                //参数一：输出路径
+                //参数二：输出字符编码格式
+                .withRollingPolicy(
+                //指定一个滚动策略
+                        DefaultRollingPolicy.builder()
+                                .withRolloverInterval(TimeUnit.MINUTES.toMillis(15))//时间间隔毫秒数
+                                .withInactivityInterval(TimeUnit.MINUTES.toMillis(5))//当前不活跃的时间 5分钟没有数据就归档保存
+                                .withMaxPartSize(1024 * 1024 * 1024)   //文件最大值
+                                .build()
+                ).build();
+        // 将 Event 转换成 String 写入文件
+        stream3.map(Event::toString).addSink(fileSink);
+
+        env.execute();
+    }
+}
+```
+
+![image-20221117153723928](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221117153723928.png)
 
 ### 5.4.3 输出到 Kafka
 
+```java
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 
+import java.util.Properties;
+
+public class SinkToKafkaTest {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env =
+                StreamExecutionEnvironment.getExecutionEnvironment();
+
+
+        Properties properties = new Properties();
+        properties.put("bootstrap.servers", "hadoop102:9092");
+
+
+        DataStreamSource<String> stream = env.readTextFile("input/clicks.csv");
+
+        stream.addSink(new FlinkKafkaProducer<String>("clicks", new SimpleStringSchema(), properties));
+
+        env.execute();
+    }
+}
+```
+
+运行代码，在 Linux 主机启动一个消费者, 查看是否收到数据
+
+```
+ bin/kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic clicks
+```
+
+![image-20221117154943602](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221117154943602.png)
 
 ### 5.4.4 输出到 Redis
 
+```
+<dependency>
+    <groupId>org.apache.bahir</groupId>
+    <artifactId>flink-connector-redis_2.11</artifactId>
+    <version>1.0</version>
+</dependency>
+```
 
+```java
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.redis.RedisSink;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+
+public class SinkToRedisTest {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStreamSource<Event> stream = env.addSource(new ClickSource());
+
+        // 创建一个到redis连接的配置
+        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder()
+                .setHost("hadoop102")
+                .build();
+
+        stream.addSink(new RedisSink<Event>(conf, new MyRedisMapper()));
+
+        env.execute();
+    }
+    public static class MyRedisMapper implements RedisMapper<Event> {
+        @Override
+        public RedisCommandDescription getCommandDescription() {
+            return new RedisCommandDescription(RedisCommand.HSET, "clicks");
+        }
+
+        @Override
+        public String getKeyFromData(Event data) {
+            return data.user;
+        }
+
+        @Override
+        public String getValueFromData(Event data) {
+            return data.url;
+        }
+    }
+
+}
+```
 
 ### 5.4.5 输出到 Elasticsearch
 
+```
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-connector-elasticsearch7_${scala.binary.version}</artifactId>
+    <version>${flink.version}</version>
+</dependency>
+```
 
+```java
+import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction;
+import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer;
+import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.Requests;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class SinkToEsTest {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        DataStreamSource<Event> stream = env.fromElements(
+                new Event("Mary", "./home", 1000L),
+                new Event("Bob", "./cart", 2000L),
+                new Event("Alice", "./prod?id=100", 3000L),
+                new Event("Alice", "./prod?id=200", 3500L),
+                new Event("Bob", "./prod?id=2", 2500L),
+                new Event("Alice", "./prod?id=300", 3600L),
+                new Event("Bob", "./home", 3000L),
+                new Event("Bob", "./prod?id=1", 2300L),
+                new Event("Bob", "./prod?id=3", 3300L));
+
+        ArrayList<HttpHost> httpHosts = new ArrayList<>();
+        httpHosts.add(new HttpHost("hadoop102", 9200, "http"));
+
+        // 创建一个ElasticsearchSinkFunction
+        ElasticsearchSinkFunction<Event> elasticsearchSinkFunction = new ElasticsearchSinkFunction<Event>() {
+            @Override
+            
+            public void process(Event element, RuntimeContext ctx, RequestIndexer indexer) {
+                HashMap<String, String> data = new HashMap<>();
+                data.put(element.user, element.url);
+
+                IndexRequest request = Requests.indexRequest()
+                        .index("clicks")
+                        .type("type")    // Es 6 必须定义 type
+                        .source(data);
+
+                indexer.add(request);
+            }
+        };
+
+        stream.addSink(new ElasticsearchSink.Builder<Event>(httpHosts, elasticsearchSinkFunction).build());
+
+        env.execute();
+    }
+}
+```
 
 ### 5.4.6 输出到 MySQL（JDBC）
 
+（1）添加依赖
+
+```
+<dependency>
+ <groupId>org.apache.flink</groupId>
+ <artifactId>flink-connector-jdbc_${scala.binary.version}</artifactId>
+ <version>${flink.version}</version>
+</dependency>
+<dependency>
+ <groupId>mysql</groupId>
+ <artifactId>mysql-connector-java</artifactId>
+ <version>5.1.47</version>
+</dependency>
+```
+
+（2）启动 MySQL，在 database 库下建表 clicks
+
+```
+mysql> create table clicks(
+ -> user varchar(20) not null,
+ -> url varchar(100) not null);
+```
+
+（3）编写输出到 MySQL 的示例代码
+
+```java
+package com.atguigu.chapter05;
+
+/**
+ * Copyright (c) 2020-2030 尚硅谷 All Rights Reserved
+ * <p>
+ * Project:  FlinkTutorial
+ * <p>
+ * Created by  wushengran
+ */
+
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
+import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
+import org.apache.flink.connector.jdbc.JdbcSink;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
+public class SinkToMySQL {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
 
 
-### 5.4.7 自定义 Sink 输出
+        DataStreamSource<Event> stream = env.fromElements(
+                new Event("Mary", "./home", 1000L),
+                new Event("Bob", "./cart", 2000L),
+                new Event("Alice", "./prod?id=100", 3000L),
+                new Event("Alice", "./prod?id=200", 3500L),
+                new Event("Bob", "./prod?id=2", 2500L),
+                new Event("Alice", "./prod?id=300", 3600L),
+                new Event("Bob", "./home", 3000L),
+                new Event("Bob", "./prod?id=1", 2300L),
+                new Event("Bob", "./prod?id=3", 3300L));
+
+        stream.addSink(
+                JdbcSink.sink(
+                        "INSERT INTO clicks (user, url) VALUES (?, ?)",
+                        (statement, r) -> {
+                            statement.setString(1, r.user);
+                            statement.setString(2, r.url);
+                        },
+                        new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
+                                .withUrl("jdbc:mysql://localhost:3306/test")
+                                .withDriverName("com.mysql.jdbc.Driver")
+                                .withUsername("root")
+                                .withPassword("root")
+                                .build()
+                )
+        );
+        env.execute();
+    }
+}
+```
+
+（4）运行代码，用客户端连接 MySQL，查看是否成功写入数据。
+
+```
+mysql> select * from clicks;
++------+--------------+
+| user | url |
++------+--------------+
+| Mary | ./home |
+| Alice| ./prod?id=300 |
+| Bob | ./prod?id=3 |
++------+---------------+
+3 rows in set (0.00 sec)
+```
+
+# 第 6 章 Flink 中的时间和窗口
+
+## 6.1 时间语义
+
+### 6.1.1 Flink 中的时间语义
+
+![image-20221117163355711](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221117163355711.png)
+
+**1.处理时间（Processing Time）**
+
+  处理时间的概念非常简单，就是指执行处理操作的机器的系统时间。
+
+**2.事件时间（Event Time）**
+
+  事件时间，是指每个事件在对应的设备上发生的时间，也就是数据生成的时间。
+
+### 6.1.2 哪种时间语义更重要
+
+  实际应用中，数据==产生的时间==和==处理的时间==可能是完全不同的。很长时间收集起来的数据，处理或许只要一瞬间；也有可能数据量过大、处理能力不足，短时间堆了大量数据处理不完，==产生“背压”（back pressure）。==
+
+  ==通常来说，处理时间是我们计算效率的衡量标准==，而==事件时间会更符合我们的业务计算逻辑==。所以==更多时候我们使用事件时间==；不过处理时间也不是一无是处。对于处理时间而言，由于没有任何附加考虑，数据一来就直接处理，因此这种方式可以让我们的流处理延迟降到最低，效率达到最高。
+
+## 6.2 水位线（Watermark）
+
+### 6.2.1 事件时间和窗口
+
+![image-20221117165859376](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221117165859376.png)
+
+### 6.2.2 什么是水位线
+
+  在Flink中，**水位线是一种衡量Event Time进展的机制**，用来处理实时数据中的乱序问题的，通常是水位线和窗口结合使用来实现。 从设备生成实时流事件，到Flink的source，再到多个oparator处理数据，过程中会受到网络延迟、背压等多种因素影响造成数据乱序。
+
+​		具体实现上，==水位线可以看作一条特殊的数据记录，它是插入到数据流中的一个标记点，主要内容就是一个时间戳，用来指示当前的事件时间。==而它插入流中的位置，就应该是在某个数据到来之后；这样就可以从这个数据中提取时间戳，作为当前水位线的时间戳了。
+
+![image-20221119172614899](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119172614899.png)
+
+**1.有序流中的水位线**
+
+![image-20221118170851128](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118170851128.png)
 
 
 
 
 
+**2.乱序流中的水位线**
+
+  这里所说的“乱序”（out-of-order），是指数据的先后顺序不一致，主要就是基于数据的产生时间而言的。
+
+![image-20221118171008781](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118171008781.png)
+
+  我们插入新的水位线时，要先判断一下时间戳是否比之前的大，否则就不再生成新的水位线
+
+![image-20221118171221753](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118171221753.png)
+
+  如果考虑到大量数据同时到来的处理效率，我们同样可以周期性地生成水位线。这时只需要保存一下之前所有数据中的最大时间戳，需要插入水位线时，就直接以它作为时间戳生成新的水位线
+
+![image-20221118171234685](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118171234685.png)
+
+  为了让窗口能够正确收集到迟到的数据，我们也可以等上 2 秒；也就是用当前已有数据的最大时间戳减去 2 秒，就是要插入的水位线的时间戳
+
+![image-20221118171246223](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118171246223.png)
+
+**3.水位线的特性**
+
+⚫ 水位线是插入到数据流中的一个标记，可以认为是一个特殊的数据
+
+⚫ 水位线主要的内容是一个时间戳，用来表示当前事件时间的进展
+
+⚫ 水位线是基于数据的时间戳生成的
+
+⚫ 水位线的时间戳必须单调递增，以确保任务的事件时间时钟一直向前推进
+
+⚫ 水位线可以通过设置延迟，来保证正确处理乱序数据
+
+⚫ 一个水位线 Watermark(t)，表示在当前流中事件时间已经达到了时间戳 t, 这代表 t 之前的所有数据都到齐了，之后流中不会出现时间戳 t’ ≤ t 的数据
+
+### 6.2.3 如何生成水位线
+
+**1.生成水位线的总体原则**
+
+  我们知道，完美的水位线是“绝对正确”的，也就是一个水位线一旦出现，就表示这个时间之前的数据已经全部到齐、之后再也不会出现了。而完美的东西总是可望不可即，==我们只能尽量去保证水位线的正确。如果对结果正确性要求很高、想要让窗口收集到所有数据，==我们该怎么做呢？
+
+  ==一个字，等==。由于网络传输的延迟不确定，为了获取所有迟到数据，我们只能等待更长的时间。作为筹划全局的程序员，我们当然不会傻傻地一直等下去。那到底等多久呢？这就需要对相关领域有一定的了解了。比如，如果我们知道当前业务中事件的迟到时间不会超过 5 秒，那就可以将水位线的时间戳设为当前已有数据的最大时间戳减去 5 秒，相当于设置了 5 秒的延迟等待。
+
+**2.水位线生成策略（Watermark Strategies）**
+
+```java
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+
+import java.time.Duration;
+
+public class WatermarkTest {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.getConfig().setAutoWatermarkInterval(100);
+
+        //从元素中读取数据
+         SingleOutputStreamOperator<Event> stream = env.fromElements(
+                new Event("Marry", "./home", 1000L),
+                new Event("Bob", "./home", 1100L),
+                new Event("Marry", "./home", 1000L),
+                new Event("Bob", "./prod?id=1", 1000L),
+                new Event("Bob", "./home", 3500L),
+                new Event("Bob", "./prod?id=2", 3200L)
+                //有序流的watermark生成
+//        ).assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forMonotonousTimestamps()
+//        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+//            @Override
+//            public long extractTimestamp(Event element, long recordTimestamp) {
+//                return element.timestamp;
+//            }
+//        })  //提取时间戳，生成水位线
+        ).assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ofSeconds(2))
+                .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                    @Override
+                    public long extractTimestamp(Event element, long recordTimestamp) {
+                        return element.timestamp;
+                    }
+                })
+        );
+        env.execute();
+    }
+}
+```
+
+它主要用来为流中的数据分配时间戳，并生成水位线来指示事件时间
+
+```java
+.assignTimestampsAndWatermarks()
+```
+
+  .assignTimestampsAndWatermarks()方法需要传入一个 WatermarkStrategy 作为参数，这就
+是 所 谓 的 “ 水 位 线 生 成 策 略 ” 
+
+  WatermarkStrategy 中 包 含 了 一 个 “ 时 间 戳 分 配器”TimestampAssigner 和一个“水位线生成器”WatermarkGenerator
+
+**3.Flink 内置水位线生成器**
+
+**（1）有序流**
+
+```java
+stream.assignTimestampsAndWatermarks(
+ WatermarkStrategy.<Event>forMonotonousTimestamps()
+ .withTimestampAssigner(new SerializableTimestampAssigner<Event>() 
+{
+ 		@Override
+		public long extractTimestamp(Event element, long recordTimestamp) 
+         {
+ 			return element.timestamp;
+ 		   }
+ 		 })
+);
+```
+
+**（2）乱序流**
+
+  由于乱序流中需要等待迟到数据到齐，所以必须设置一个固定量的延迟时间（Fixed Amount of Lateness）
+
+```java
+.assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ofSeconds(2))
+                .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                    @Override
+                    public long extractTimestamp(Event element, long recordTimestamp) {
+                        return element.timestamp;
+                    }
+                })
+        );
+```
+
+### 6.2.4 水位线的传递
+
+  水位线定义的本质了：它表示的是“当前时间之前的数据，都已经到齐了”。这是一种保证，告诉下游任务“只要你接到这个水位线，就代表之后我不会再给你发更早的数据了，你可以放心做统计计算而不会遗漏数据”。所以如果一个任务收到了来自上游并行任务的不同的水位线，说明上游各个分区处理得有快有慢，进度各不相同比如上游有两个并行子任务都发来了水位线，一个是 5 秒，一个是 7 秒；这代表第一个并行任务已经处理完 5 秒之前的所有数据，而第二个并行任务处理到了 7 秒。那这时自己的时钟怎么确定呢？
+
+  当然也要以“这之前的数据全部到齐”为标准。如果我们以较大的水位线 7 秒作为当前时间，那就表示“7 秒前的数据都已经处理完”，这显然不是事实——第一个上游分区才处理到 5 秒，5~7 秒的数据还会不停地发来；而如果以最小的水位线 5 秒作为当前时钟就不会有这个问题了，因为确实所有上游分区都已经处理完，不会再发 5 秒前的数据了。这让我们想到“木桶原理”：==所有的上游并行任务就像围成木桶的一块块木板，它们中最短的那一块，决定了我们桶中的水位。==
+
+![image-20221118174258154](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118174258154.png)
+
+### 6.2.5 水位线的计算
+
+水位线的默认计算公式：水位线 = 观察到的最大事件时间 – 最大延迟时间 – 1 毫秒
+
+## 6.3 窗口（Window）
+
+### 6.3.1 窗口的概念
+
+  Flink 是一种流式计算引擎，主要是来处理无界数据流的，数据源源不断、无穷无尽。想要更加方便高效地处理无界流，一种方式就是将无限数据切割成有限的“数据块”进行处理，这就是所谓的“窗口”（Window）。
+
+![image-20221118174543309](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118174543309.png)
+
+  所以在 Flink 中，窗口其实并不是一个“框”，流进来的数据被框住了就只能进这一个窗口。相比之下，我们应该把窗口理解成一个“桶”。在 Flink 中，窗口可以把流切割成有限大小的多个“存储桶”（bucket)；每个数据都会分发到对应的桶中，当到达窗口结束时间时，就对每个桶中收集的数据进行计算处理。
+
+![image-20221118174647125](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118174647125.png)
+
+### 6.3.2 窗口的分类
+
+**1.按照驱动类型分类**
+
+**（1）时间窗口（Time Window）**
+
+  时间窗口以时间点来定义窗口的开始（start）和结束（end），所以截取出的就是某一时间段的数据。到达结束时间时，窗口不再收集数据，触发计算输出结果，并将窗口关闭销毁。所以可以说基本思路就是“定点发车”。
+
+**（2）计数窗口（Count Window）**
+
+  计数窗口基于元素的个数来截取数据，到达固定的个数时就触发计算并关闭窗口。这相当于座位有限、“人满就发车”，是否发车与时间无关。每个窗口截取数据的个数，就是窗口的大小。
+
+![image-20221118175314162](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118175314162.png)
+
+**2.按照窗口分配数据的规则分类**
+
+**（1）滚动窗口（Tumbling Windows）**
+
+  滚动窗口有固定的大小，是一种对数据进行“均匀切片”的划分方式。窗口之间没有重叠，也不会有间隔，是“首尾相接”的状态。
+
+![image-20221118175539307](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118175539307.png)
+
+**（2）滑动窗口（Sliding Windows）**
+
+  与滚动窗口类似，滑动窗口的大小也是固定的。区别在于，窗口之间并不是首尾相接的，而是可以“错开”一定的位置。如果看作一个窗口的运动，那么就像是向前小步“滑动”一样。
+
+![image-20221118175551399](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118175551399.png)
+
+**（3）会话窗口（Session Windows）**
+
+  会话窗口顾名思义，是基于“会话”（session）来来对数据进行分组的。这里的会话类似Web 应用中 session 的概念，不过并不表示两端的通讯过程，而是借用会话超时失效的机制来描述窗口。简单来说，就是数据来了之后就开启一个会话窗口，如果接下来还有数据陆续到来，那么就一直保持会话；如果一段时间一直没收到数据，那就认为会话超时失效，窗口自动关闭。
 
 
-# 第 7 章 处理函数
+
+![image-20221118175604219](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118175604219.png)
+
+**（4）全局窗口（Global Windows）**
+
+  还有一类比较通用的窗口，就是“全局窗口”。这种窗口全局有效，会把相同 key 的所有数据都分配到同一个窗口中；说直白一点，就跟没分窗口一样。无界流的数据永无止尽，所以这种窗口也没有结束的时候，默认是不会做触发计算的。
+
+![image-20221118175650018](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221118175650018.png)
+
+### 6.3.3 窗口 API 概览
+
+**1.按键分区（Keyed）和非按键分区（Non-Keyed）**
+
+**（1）按键分区窗口（Keyed Windows）**
+
+  在调用窗口算子之前，是否有 keyBy 操作。
+
+```
+stream.keyBy(...)
+ .window(...)
+```
+
+**（2）非按键分区（Non-Keyed Windows）**
+
+  推荐KeyBy之后再开窗
+
+> 这时窗口逻辑只能在一个任务（task）上执行，就相当于并行度变成了 1。所以在实际应用中一般不推荐使用这种方式。
+
+```
+stream.windowAll(...)
+```
+
+**2.代码中窗口 API 的调用**
+
+```
+stream.keyBy(<key selector>)
+ 	.window(<window assigner>)  //窗口分配器
+ 	.aggregate(<window function>)  //窗口函数
+```
+
+### 6.3.4 窗口分配器（Window Assigners）
+
+**1.时间窗口**
+
+**（1）滚动处理时间窗口**
+
+  窗口分配器由类 TumblingProcessingTimeWindows 提供，需要调用它的静态方法.of()
+
+```
+stream.keyBy(...)
+.window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
+.aggregate(...)
+```
+
+  这里.of()方法需要传入一个 Time 类型的参数 size，表示滚动窗口的大小，我们这里创建了一个长度为 5 秒的滚动窗口。
+
+**（2）滑动处理时间窗口**
+
+窗口分配器由类 SlidingProcessingTimeWindows 提供，同样需要调用它的静态方法.of()
+
+```
+stream.keyBy(...)
+  .window(SlidingProcessingTimeWindows.of(Time.seconds(10), Time.seconds(5)))
+  .aggregate(...)
+```
+
+  这里.of()方法需要传入两个 Time 类型的参数：size 和 slide，前者表示滑动窗口的大小，后者表示滑动窗口的滑动步长。我们这里创建了一个长度为 10 秒、滑动步长为 5 秒的滑动窗口。
+
+  滑动窗口同样可以追加第三个参数，用于指定窗口起始点的偏移量，用法与滚动窗口完全一致。
+
+**（3）处理时间会话窗口**
+
+  窗口分配器由类 ProcessingTimeSessionWindows 提供，需要调用它的静态方法.withGap()或者.withDynamicGap()。
+
+```
+stream.keyBy(...)
+  .window(ProcessingTimeSessionWindows.withGap(Time.seconds(10)))
+  .aggregate(...)
+```
+
+  这里.withGap()方法需要传入一个 Time 类型的参数 size，表示会话的超时时间，也就是最小间隔 session gap。我们这里创建了静态会话超时时间为 10 秒的会话窗口。
+
+**（4）滚动事件时间窗口**
+
+  窗口分配器由类 TumblingEventTimeWindows 提供，用法与滚动处理事件窗口完全一致。
+
+```
+stream.keyBy(...)
+	.window(TumblingEventTimeWindows.of(Time.seconds(5)))
+	.aggregate(...)
+```
+
+  这里.of()方法也可以传入第二个参数 offset，用于设置窗口起始点的偏移量。
+
+**（5）滑动事件时间窗口**
+
+  窗口分配器由类 SlidingEventTimeWindows 提供，用法与滑动处理事件窗口完全一致。
+
+```
+stream.keyBy(...)
+	.window(SlidingEventTimeWindows.of(Time.seconds(10), Time.seconds(5)))
+	.aggregate(...)
+```
+
+**（6）事件时间会话窗口**
+
+  窗口分配器由类 EventTimeSessionWindows 提供，用法与处理事件会话窗口完全一致
+
+```
+stream.keyBy(...)
+	.window(EventTimeSessionWindows.withGap(Time.seconds(10)))
+	.aggregate(...)
+```
 
 
 
-# 第 8 章 多流转换
+**2.计数窗口**
+
+**（1）滚动计数窗口**
+
+  滚动计数窗口只需要传入一个长整型的参数 size，表示窗口的大小
+
+```
+stream.keyBy(...)
+	.countWindow(10)
+```
+
+**（2）滑动计数窗口**
+
+  与滚动计数窗口类似，不过需要在.countWindow()调用时传入两个参数：size 和 slide，前者表示窗口大小，后者表示滑动步长。
+
+```
+stream.keyBy(...)
+	.countWindow(10，3)
+```
+
+  我们定义了一个长度为 10、滑动步长为 3 的滑动计数窗口。每个窗口统计 10 个数据，每隔 3 个数据就统计输出一次结果。
+
+**3.全局窗口**
+
+  全局窗口是计数窗口的底层实现，一般在需要自定义窗口时使用。它的定义同样是直接调用.window()，分配器由 GlobalWindows 类提供。
+
+```
+stream.keyBy(...)
+	.window(GlobalWindows.create());
+```
+
+  需要注意使用全局窗口，必须自行定义触发器才能实现窗口计算，否则起不到任何作用。
+
+### 6.3.5 窗口函数（Window Functions）
+
+![image-20221119163752972](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119163752972.png)
+
+**1.增量聚合函数（incremental aggregation functions）**
+
+  每来一条数据就立即进行计算，中间只要保持一个简单的聚合状态就可以了
+
+**（1）归约函数（ReduceFunction）**
+
+  最基本的聚合方式就是归约（reduce）。我们在基本转换的聚合算子中介绍过 reduce 的用法，窗口的归约聚合也非常类似，就是将窗口中收集到的数据两两进行归约。
+
+```java
+package com.fang.chapter06;
+
+
+import com.fang.chapter05.ClinkSource;
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+
+
+import java.time.Duration;
+
+public class WindowTest {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        env.getConfig().setAutoWatermarkInterval(100);
+
+        //从元素中读取数据
+        SingleOutputStreamOperator<Event> stream = env.addSource(new ClinkSource())
+                .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ZERO)
+                        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                            @Override
+                            public long extractTimestamp(Event element, long
+                                    recordTimestamp) {
+                                return element.timestamp;
+                            }}));
+
+
+        stream.map(new MapFunction<Event, Tuple2<String,Long>>() {
+            public Tuple2<String, Long> map(Event value) throws Exception {
+                return Tuple2.of(value.user,1L);
+            }
+        })
+                .keyBy(data->data.f0)
+                .window(TumblingProcessingTimeWindows.of(Time.seconds(10)))//滚动事件时间窗口
+                .reduce(new ReduceFunction<Tuple2<String, Long>>() {
+                    @Override
+                    public Tuple2<String, Long> reduce(Tuple2<String, Long> value1, Tuple2<String, Long> value2) throws Exception {
+                        return Tuple2.of(value1.f0, value1.f1+value2.f1);
+                    }
+                })
+                .print();
+
+        env.execute();
+    }
+}
+
+```
+
+![image-20221119163607311](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119163607311.png)
+
+**（2）聚合函数（AggregateFunction）**
+
+  ReduceFunction 可以解决大多数归约聚合的问题，但是这个接口有一个限制，就是聚合状态的类型、输出结果的类型都必须和输入数据类型一样。这就迫使我们必须在聚合前，先将数据转换（map）成预期结果类型；而在有些情况下，还需要对状态进行进一步处理才能得到输出结果，这时它们的类型可能不同，使用 ReduceFunction 就会非常麻烦。
+
+  Flink 的 Window API 中的 aggregate 就提供了这样的操作。直接基于 WindowedStream 调用.aggregate()方法，就可以定义更加灵活的窗口聚合操作。这个方法需要传入一个AggregateFunction 的实现类作为参数。AggregateFunction 在源码中的定义如下：
+
+```java
+public interface AggregateFunction<IN, ACC, OUT> extends Function, Serializable 
+{
+	 ACC createAccumulator();
+	 ACC add(IN value, ACC accumulator);
+	 OUT getResult(ACC accumulator);
+	 ACC merge(ACC a, ACC b);
+}
+```
+
+**接口中有四个方法：**
+
+⚫ createAccumulator()：创建一个累加器，这就是为聚合创建了一个初始状态，每个聚合任务只会调用一次。
+
+⚫ add()：将输入的元素添加到累加器中。这就是基于聚合状态，对新来的数据进行进一步聚合的过程。方法传入两个参数：当前新到的数据 value，和当前的累加器accumulator；返回一个新的累加器值，也就是对聚合状态进行更新。每条数据到来之后都会调用这个方法。
+
+⚫ getResult()：从累加器中提取聚合的输出结果。也就是说，我们可以定义多个状态，然后再基于这些聚合的状态计算出一个结果进行输出。比如之前我们提到的计算平均值，就可以把 sum 和 count 作为状态放入累加器，而在调用这个方法时相除得到最终结果。这个方法只在窗口要输出结果时调用。
+
+⚫ merge()：合并两个累加器，并将合并后的状态作为一个累加器返回。这个方法只在需要合并窗口的场景下才会被调用；最常见的合并窗口（Merging Window）的场景就是会话窗口（Session Windows）。
+
+```java
+import java.util.HashSet;
+
+import com.fang.chapter05.ClinkSource;
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+
+
+public class WindowAggregateTest2 {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        //PV(访问量)： 即Page View, 即页面浏览量或点击量，用户每次刷新即被计算一次。
+        //UV(独立访客)：即Unique Visitor,访问您网站的一台电脑客户端为一个访客
+
+        SingleOutputStreamOperator<Event> stream = env.addSource(new ClinkSource())
+                .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forMonotonousTimestamps()
+                        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                            @Override
+                            public long extractTimestamp(Event element, long recordTimestamp) {
+                                return element.timestamp;
+                            }
+                        }));
+
+        // 所有数据设置相同的key，发送到同一个分区统计PV和UV，再相除
+        stream.keyBy(data -> true)
+                .window(SlidingEventTimeWindows.of(Time.seconds(10), Time.seconds(2)))
+                .aggregate(new AvgPv())
+                .print();
+        env.execute();
+    }
+
+    public static class AvgPv implements AggregateFunction<Event, Tuple2<HashSet<String>, Long>, Double> {
+        @Override
+        public Tuple2<HashSet<String>, Long> createAccumulator() {
+            // 创建累加器
+            return Tuple2.of(new HashSet<String>(), 0L);
+        }
+
+        @Override
+        public Tuple2<HashSet<String>, Long> add(Event value, Tuple2<HashSet<String>, Long> accumulator) {
+            // 属于本窗口的数据来一条累加一次，并返回累加器
+            accumulator.f0.add(value.user);
+            return Tuple2.of(accumulator.f0, accumulator.f1 + 1L);
+        }
+
+        @Override
+        public Double getResult(Tuple2<HashSet<String>, Long> accumulator) {
+            // 窗口闭合时，增量聚合结束，将计算结果发送到下游
+            return (double) accumulator.f1 / accumulator.f0.size();  //平均每个用户活跃度
+        }
+
+        @Override
+        public Tuple2<HashSet<String>, Long> merge(Tuple2<HashSet<String>, Long> a, Tuple2<HashSet<String>, Long> b) {
+            return null;
+        }
+    }
+}
+```
+
+![image-20221119163637406](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119163637406.png)
+
+**2.全窗口函数（full window functions）**
+
+  窗口操作中的另一大类就是全窗口函数。与增量聚合函数不同，全窗口函数需要先收集窗口中的数据，并在内部缓存起来，等到窗口要输出结果的时候再取出数据进行计算。
+
+**（1）窗口函数（WindowFunction）**
+
+  WindowFunction 字面上就是“窗口函数”，它其实是老版本的通用窗口函数接口。我们可以基于 WindowedStream 调用.apply()方法，传入一个 WindowFunction 的实现类。
+
+```java
+stream
+ .keyBy(<key selector>)
+ .window(<window assigner>)
+ .apply(new MyWindowFunction());
+```
+
+  这个类中可以获取到包含窗口所有数据的可迭代集合（Iterable），还可以拿到窗口（Window）本身的信息。WindowFunction 接口在源码中实现如下：
+
+```java
+public interface WindowFunction<IN, OUT, KEY, W extends Window> extends Function, 
+Serializable {
+	void apply(KEY key, W window, Iterable<IN> input, Collector<OUT> out) throws 
+	Exception;
+}
+```
+
+  当窗口到达结束时间需要触发计算时，就会调用这里的 apply 方法。我们可以从 input 集合中取出窗口收集的数据，结合 key 和 window 信息，通过收集器（Collector）输出结果。这里 Collector 的用法，与 FlatMapFunction 中相同。
+
+  不过我们也看到了，WindowFunction 能提供的上下文信息较少，也没有更高级的功能。事实上，它的作用可以被 ProcessWindowFunction 全覆盖，所以之后可能会逐渐弃用。一般在实际应用，直接使用 ProcessWindowFunction 就可以了
+
+**（2）处理窗口函数（ProcessWindowFunction）**
+
+```java
+import com.fang.chapter05.ClinkSource;
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
+
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.util.HashSet;
+
+public class UvCountByWindowExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+
+        SingleOutputStreamOperator<Event> stream = env.addSource(new ClinkSource())
+                .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ZERO)
+                        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                            @Override
+                            public long extractTimestamp(Event element, long recordTimestamp) {
+                                return element.timestamp;
+                            }
+                        }));
+
+        // 将数据全部发往同一分区，按窗口统计UV
+        stream.keyBy(data -> true)
+                .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                .process(new UvCountByWindow())
+                .print();
+
+        env.execute();
+    }
+
+    // 自定义窗口处理函数
+    public static class UvCountByWindow extends ProcessWindowFunction<Event, String, Boolean, TimeWindow> {
+        @Override
+        public void process(Boolean aBoolean, Context context, Iterable<Event> elements, Collector<String> out) throws Exception {
+            HashSet<String> userSet = new HashSet<>();
+            // 遍历所有数据，放到Set里去重
+            for (Event event: elements){
+                userSet.add(event.user);
+            }
+            // 结合窗口信息，包装输出内容
+            Long start = context.window().getStart();
+            Long end = context.window().getEnd();
+            out.collect("窗口: " + new Timestamp(start) + " ~ " + new Timestamp(end)
+                    + " 的独立访客数量是：" + userSet.size());
+        }
+    }
+}
+```
+
+![image-20221119163418234](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119163418234.png)
 
 
 
-# 第 9 章 状态编程
+**3.增量聚合和全窗口函数的结合使用**
+
+```java
+package com.fang.chapter06;
+
+import com.fang.chapter05.ClinkSource;
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 
 
+public class UrlViewCountExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
 
-# 第 10 章 容错机制
+        SingleOutputStreamOperator<Event> stream = env.addSource(new ClinkSource())
+                .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forMonotonousTimestamps()
+                        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                            @Override
+                            public long extractTimestamp(Event element, long recordTimestamp) {
+                                return element.timestamp;
+                            }
+                        }));
+
+        // 需要按照url分组，开滑动窗口统计
+        stream.keyBy(data -> data.url)
+                .window(SlidingEventTimeWindows.of(Time.seconds(10), Time.seconds(5)))
+                // 同时传入增量聚合函数和全窗口函数
+                .aggregate(new UrlViewCountAgg(), new UrlViewCountResult())
+                .print();
+
+        env.execute();
+    }
+
+    // 自定义增量聚合函数，来一条数据就加一
+    public static class UrlViewCountAgg implements AggregateFunction<Event, Long, Long> {
+        @Override
+        public Long createAccumulator() {
+            return 0L;
+        }
+
+        @Override
+        public Long add(Event value, Long accumulator) {
+            return accumulator + 1;
+        }
+
+        @Override
+        public Long getResult(Long accumulator) {
+            return accumulator;
+        }
+
+        @Override
+        public Long merge(Long a, Long b) {
+            return null;
+        }
+    }
+
+    // 自定义窗口处理函数，只需要包装窗口信息
+    public static class UrlViewCountResult extends ProcessWindowFunction<Long, UrlViewCount, String, TimeWindow> {
+
+        @Override
+        public void process(String url, Context context, Iterable<Long> elements, Collector<UrlViewCount> out) throws Exception {
+            // 结合窗口信息，包装输出内容
+            Long start = context.window().getStart();
+            Long end = context.window().getEnd();
+            // 迭代器中只有一个元素，就是增量聚合函数的计算结果
+            out.collect(new UrlViewCount(url, elements.iterator().next(), start, end));
+        }
+    }
+}
+```
+
+![image-20221119163454925](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221119163454925.png)
+
+### 6.3.6 测试水位线和窗口的使用
+
+```java
+package com.fang.chapter06;
+
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.MapFunction;;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
+
+import java.time.Duration;
+
+public class WatermarkTest2 {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env =
+                StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        // 将数据源改为 socket 文本流，并转换成 Event 类型
+        env.socketTextStream("hadoop102", 7777)
+                .map(new MapFunction<String, Event>() {
+                    @Override
+                    public Event map(String value) throws Exception {
+                        String[] fields = value.split(",");
+                        return new Event(fields[0].trim(), fields[1].trim(),
+                                Long.valueOf(fields[2].trim()));
+                    }
+                })
+                // 插入水位线的逻辑
+                .assignTimestampsAndWatermarks(
+                        // 针对乱序流插入水位线，延迟时间设置为 5s
+                        WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ofSeconds(5))
+                                .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                                    // 抽取时间戳的逻辑
+                                    @Override
+                                    public long extractTimestamp(Event element, long
+                                            recordTimestamp) {
+                                        return element.timestamp;
+                                    }
+                                })
+                )
+                // 根据 user 分组，开窗统计
+                .keyBy(data -> data.user)
+                .window(TumblingEventTimeWindows.of(Time.seconds(10)))//窗口大小为10s
+                .process(new WatermarkTestResult())
+                .print();
+
+        env.execute();
+    }
+    // 自定义处理窗口函数，输出当前的水位线和窗口信息
+    public static class WatermarkTestResult extends ProcessWindowFunction<Event,
+            String, String, TimeWindow>{
+        @Override
+        public void process(String s, Context context, Iterable<Event> elements,
+                            Collector<String> out) throws Exception {
+            Long start = context.window().getStart();
+            Long end = context.window().getEnd();
+            Long currentWatermark = context.currentWatermark();
+            Long count = elements.spliterator().getExactSizeIfKnown();
+            out.collect("窗口" + start + " ~ " + end + "中共有" + count + "个元素，窗口闭合计算时，水位线处于：" + currentWatermark);
+
+        }
+    }
+
+}
+
+```
+
+我们这里设置的最大延迟时间是 5 秒，所以当我们在终端启动 nc 程序，也就是 nc –lk 7777
+
+**然后输入如下数据时：**
+
+```
+Alice, ./home, 1000
+Alice, ./cart, 2000
+Alice, ./prod?id=100, 10000
+Alice, ./prod?id=200, 8000
+Alice, ./prod?id=300, 15000
+```
+
+**我们会看到如下结果：**
+
+```
+  窗口 0 ~ 10000 中共有 3 个元素，窗口闭合计算时，水位线处于：9999
+```
+
+  我们就会发现，当最后输入[Alice, ./prod?id=300, 15000]时，流中会周期性地（默认 200毫秒）插入一个时间戳为 15000L – 5 * 1000L – 1L = 9999 毫秒的水位线，已经到达了窗口[0,10000)的结束时间，所以会触发窗口的闭合计算。而后面再输入一条[Alice, ./prod?id=200, 9000]时，将不会有任何结果；因为这是一条迟到数据，它所属于的窗口已经触发计算然后销毁了（窗口默认被销毁），所以无法再进入到窗口中，自然也就无法更新计算结果了。窗口中的迟到数据默认会被丢弃，这会导致计算结果不够准确。Flink 提供了有效处理迟到数据的手段。
+
+### 6.3.7 其他 API
+
+**1.触发器（Trigger）**
+
+  触发器主要是用来控制窗口什么时候触发计算。所谓的“触发计算”，本质上就是执行窗口函数，所以可以认为是计算得到结果并输出的过程。
+
+  基于 WindowedStream 调用.trigger()方法，就可以传入一个自定义的窗口触发器（Trigger）。
+
+```java
+stream.keyBy(...)
+	 .window(...)
+	 .trigger(new MyTrigger())
+```
+
+==Trigger 是一个抽象类，自定义时必须实现下面四个抽象方法：==
+
+⚫ onElement()：窗口中每到来一个元素，都会调用这个方法。
+
+⚫ onEventTime()：当注册的事件时间定时器触发时，将调用这个方法。
+
+⚫ onProcessingTime ()：当注册的处理时间定时器触发时，将调用这个方法。
+
+⚫ clear()：当窗口关闭销毁时，调用这个方法。一般用来清除自定义的状态。
+
+  ==以上三个方法返回类型都是 TriggerResult，这是一个枚举类型（enum），其中定义了对窗口进行操作的四种类型。==
+
+⚫ CONTINUE（继续）：什么都不做
+
+⚫ FIRE（触发）：触发计算，输出结果
+
+⚫ PURGE（清除）：清空窗口中的所有数据，销毁窗口
+
+⚫ FIRE_AND_PURGE（触发并清除）：触发计算输出结果，并清除窗口
+
+**2.移除器（Evictor）**
+
+  移除器主要用来定义移除某些数据的逻辑。基于 WindowedStream 调用.evictor()方法，就可以传入一个自定义的移除器（Evictor）。Evictor 是一个接口，不同的窗口类型都有各自预实现的移除器。
+
+```java
+stream.keyBy(...)
+	 .window(...)
+	 .evictor(new MyEvictor())
+```
+
+Evictor 接口定义了两个方法：
+
+⚫ evictBefore()：定义执行窗口函数之前的移除数据操作
+
+⚫ evictAfter()：定义执行窗口函数之后的以处数据操作
+
+默认情况下，预实现的移除器都是在执行窗口函数（window fucntions）之前移除数据的。
+
+**3.允许延迟（Allowed Lateness）**
+
+  基于 WindowedStream 调用.allowedLateness()方法，传入一个 Time 类型的延迟时间，就可以表示允许这段时间内的延迟数据。
+
+  我们可以设定允许延迟一段时间，在这段时间内，窗口不会销毁，继续到来的数据依然可以进入窗口中并触发计算。直到水位线推进到了 窗口结束时间 + 延迟时间，才真正将窗口的内容清空，正式关闭窗口。
+
+```java
+stream.keyBy(...)
+ 	.window(TumblingEventTimeWindows.of(Time.hours(1)))
+ 	.allowedLateness(Time.minutes(1))
+```
+
+**4.将迟到的数据放入侧输出流**
+
+  将未收入窗口的迟到数据，放入“侧输出流”（side output）进行另外的处理。所谓的侧输出流，相当于是数据流的一个“分支”，这个流中单独放置那些错过了该上的车、本该被丢弃的数据。
+
+  基于 WindowedStream 调用.sideOutputLateData() 方法，就可以实现这个功能。方法需要传入一个“输出标签”（OutputTag），用来标记分支的迟到数据流。因为保存的就是流中的原始数据，所以 OutputTag 的类型与流中数据类型相同。
+
+```
+DataStream<Event> stream = env.addSource(...);
+OutputTag<Event> outputTag = new OutputTag<Event>("late") {};
+stream.keyBy(...)
+ .window(TumblingEventTimeWindows.of(Time.hours(1)))
+ .sideOutputLateData(outputTag)
+```
+
+  将迟到数据放入侧输出流之后，还应该可以将它提取出来。基于窗口处理完成之后的DataStream，调用.getSideOutput()方法，传入对应的输出标签，就可以获取到迟到数据所在的流了。
+
+```java
+SingleOutputStreamOperator<AggResult> winAggStream = stream.keyBy(...)
+	 .window(TumblingEventTimeWindows.of(Time.hours(1)))
+ 	.sideOutputLateData(outputTag)
+	 .aggregate(new MyAggregateFunction())
+	 DataStream<Event> lateStream =    
+ 	 winAggStream.getSideOutput(outputTag);
+```
+
+  这里注意，getSideOutput()是 SingleOutputStreamOperator 的方法，获取到的侧输出流数据类型应该和 OutputTag 指定的类型一致，与窗口聚合之后流中的数据类型可以不同。
+
+### 6.3.8 窗口的生命周期
+
+**1.窗口的创建**
+
+  窗口的类型和基本信息由窗口分配器（window assigners）指定，但窗口不会预先创建好，而是由数据驱动创建。<font color='red'>当第一个应该属于这个窗口的数据元素到达时，就会创建对应的窗口。</font>
+
+**2.窗口计算的触发**
+
+  除了窗口分配器，每个窗口还会有自己的窗口函数（window functions）和触发器（trigger）。窗口函数可以分为增量聚合函数和全窗口函数，主要定义了窗口中计算的逻辑；而触发器则是指定调用窗口函数的条件。对于不同的窗口类型，触发计算的条件也会不同。例如，一个滚动事件时间窗口，应该在水位线到达窗口结束时间的时候触发计算，属于“定点发车”；而一个计数窗口，会在窗口中元素数量达到定义大小时触发计算，属于“人满就发车”。所以 Flink 预定义的窗口类型都有对应内置的触发器。
+
+  对于事件时间窗口而言，除去到达结束时间的“定点发车”，还有另一种情形。当我们设置了允许延迟，那么如果水位线超过了窗口结束时间、但还没有到达设定的最大延迟时间，这期间内到达的迟到数据也会触发窗口计算。这类似于没有准时赶上班车的人又追上了车，这时车要再次停靠、开门，将新的数据整合统计进来。
+
+**3.窗口的销毁**
+
+  一般情况下，当时间达到了结束点，就会直接触发计算输出结果、进而清除状态销毁窗口。这时窗口的销毁可以认为和触发计算是同一时刻。这里需要注意，Flink 中只对时间窗口（TimeWindow）有销毁机制；由于计数窗口（CountWindow）是基于全局窗口（GlobalWindw）实现的，而全局窗口不会清除状态，所以就不会被销毁。在特殊的场景下，窗口的销毁和触发计算会有所不同。事件时间语义下，如果设置了允许延迟，那么在水位线到达窗口结束时间时，仍然不会销毁窗口；窗口真正被完全删除的时间点，是窗口的结束时间加上用户指定的允许延迟时间。
+
+**4.窗口 API 调用总结**
+
+  到目前为止，我们已经彻底明白了 Flink 中窗口的概念和 Window API 的调用，我们再用一张图做一个完整总结。
+
+![image-20221120105631721](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221120105631721.png)
+
+## 6.4 迟到数据的处理
+
+### 6.4.1 设置水位线延迟时间
+
+  水位线是事件时间的进展，它是我们整个应用的全局逻辑时钟。水位线生成之后，会随着数据在任务间流动，从而给每个任务指明当前的事件时间。所以从这个意义上讲，==水位线是一个覆盖万物的存在，它并不只针对事件时间窗口有效。==
+
+  之前我们讲到触发器时曾提到过“定时器”，时间窗口的操作底层就是靠定时器来控制触发的。既然是底层机制，定时器自然就不可能是窗口的专利了；事实上它是 Flink 底层 API——处理函数（process function）的重要部分。
+
+  所以水位线其实是所有事件时间定时器触发的判断标准。那么==水位线的延迟，当然也就是全局时钟的滞后==，相当于是上帝拨动了琴弦，所有人的表都变慢了
+
+### 6.4.2 允许窗口处理迟到数据
+
+  由于大部分乱序数据已经被水位线的延迟等到了，所以往往迟到的数据不会太多。这样，我们会在水位线到达窗口结束时间时，先快速地输出一个近似正确的计算结果；然后保持窗口继续等到延迟数据，每来一条数据，窗口就会再次计算，并将更新后的结果输出。这样就可以逐步修正计算结果，最终得到准确的统计值了。
+
+  大多数人是在发车时刻前后到达的，所以我们只要把表调慢，稍微等一会儿，绝大部分人就都上车了，这个把表调慢的时间就是水位线的延迟；到点之后，班车就准时出发了，不过可能还有该来的人没赶上。于是我们就先慢慢往前开，这段时间内，如果迟到的人抓点紧还是可以追上的；如果有人追上来了，就停车开门让他上来，然后车继续向前开。
+
+### 6.4.3 将迟到数据放入窗口侧输出流
+
+  用窗口的侧输出流来收集关窗以后的迟到数据。这种方式是最后“兜底”的方法，只能保证数据不丢失；因为窗口已经真正关闭，所以是无法基于之前窗口的结果直接做更新的。我们只能将之前的窗口计算结果保存下来，然后获取侧输出流中的迟到数据，判断数据所属的窗口，手动对结果进行合并更新。尽管有些烦琐，实时性也不够强，但能够保证最终结果一定是正确的。
+
+### 6.4.4综合案例
+
+```java
+package com.fang.chapter06;
+
+import com.fang.chapter05.Event;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
+import org.apache.flink.util.OutputTag;
+
+import java.time.Duration;
+
+public class ProcessLateDataExample {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env =
+                StreamExecutionEnvironment.getExecutionEnvironment();
+
+        env.setParallelism(1);
+        // 读取 socket 文本流
+        SingleOutputStreamOperator<Event> stream =
+                env.socketTextStream("hadoop102", 7777)
+                        .map(new MapFunction<String, Event>() {
+                            @Override
+                            public Event map(String value) throws Exception {
+                                String[] fields = value.split(" ");
+                                return new Event(fields[0].trim(), fields[1].trim(),
+                                        Long.valueOf(fields[2].trim()));
+                            }
+                        })
+
+                        // 方式一：设置 watermark 延迟时间，2 秒钟
+                        .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ofSeconds(2))
+                                        .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
+                                                                           @Override
+                                                                           public long extractTimestamp(Event element, long
+                                                                                   recordTimestamp) {
+                                                                               return element.timestamp;
+                                                                           }
+                                                                       }));
+        // 定义侧输出流标签
+        OutputTag<Event> outputTag = new OutputTag<Event>("late"){};
+        SingleOutputStreamOperator<UrlViewCount> result = stream.keyBy(data ->
+                data.url)
+                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+                // 方式二：允许窗口处理迟到数据，设置 1 分钟的等待时间
+                .allowedLateness(Time.minutes(1))
+
+        // 方式三：将最后的迟到数据输出到侧输出流
+                .sideOutputLateData(outputTag)
+                .aggregate(new UrlViewCountAgg(), new UrlViewCountResult());
+        result.print("result");
+        result.getSideOutput(outputTag).print("late");
+        // 为方便观察，可以将原始数据也输出
+        stream.print("input");
+        env.execute();
+    }
 
 
+    public static class UrlViewCountAgg implements AggregateFunction<Event, Long,
+            Long> {
+        @Override
+        public Long createAccumulator() {
+            return 0L;
+        }
+        @Override
+        public Long add(Event value, Long accumulator) {
+            return accumulator + 1;
+        }
+        @Override
+        public Long getResult(Long accumulator) {
+            return accumulator;
+        }
+        @Override
+        public Long merge(Long a, Long b) {
+            return null;
+        }
 
-# 第 11 章 Table API 和 SQL
+    }
 
 
+    public static class UrlViewCountResult extends ProcessWindowFunction<Long,
+            UrlViewCount, String, TimeWindow> {
+        @Override
+        public void process(String url, Context context, Iterable<Long> elements,
+                            Collector<UrlViewCount> out) throws Exception {
+            // 结合窗口信息，包装输出内容
+            Long start = context.window().getStart();
+            Long end = context.window().getEnd();
+            out.collect(new UrlViewCount(url, elements.iterator().next(), start,
+                    end));
+        }
+    }
+}
+```
 
-# 第 12 章 Flink CEP
+**输入以下数据：**
+
+```
+Alice, ./home, 1000
+Alice, ./home, 2000
+Alice, ./home, 10000
+Alice, ./home, 9000
+Alice, ./cart, 12000
+Alice, ./prod?id=100, 15000
+Alice, ./home, 9000
+Alice, ./home, 8000
+Alice, ./prod?id=200, 70000
+Alice, ./home, 8000
+Alice, ./prod?id=300, 72000
+Alice, ./home, 8000
+```
+
+**运行结果：**
+
+![image-20221120164214773](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221120164214773.png)
+
+  下面我们来分析一下程序的运行过程。当输入数据[Alice, ./home, 10000]时，时间戳为10000，由于设置了 2 秒钟的水位线延迟时间，所以此时水位线到达了 8 秒（事实上是 7999毫秒，这里不再追究减 1 的细节），并没有触发 [0, 10s) 窗口的计算；所以接下来时间戳为 9000的数据到来，同样可以直接进入窗口做增量聚合。当时间戳为 12000 的数据到来时（无所谓url 是什么，所有数据都可以推动水位线前进），==水位线到达了 12000 – 2 * 1000 = 10000，所以触发了[0, 10s) 窗口的计算==，第一次输出了窗口统计结果，如下所示：
+
+```
+result> UrlViewCount{url='./home,', count=3, windowStart=1970-01-01 08:00:00.0, windowEnd=1970-01-01 08:00:10.0}
+```
+
+  这里 count 值为 3，就包括了之前输入的时间戳为 1000、2000、9000 的三条数据。不过窗口触发计算之后并没有关闭销毁，而是继续等待迟到数据。之后时间戳为 15000的数据继续推进水位线，此时时钟已经进展到了 13000ms；此时再来一条时间戳为 9000 的数据，我们会发现立即输出了一条统计结果：
+
+```
+result> UrlViewCount{url='./home,', count=4, windowStart=1970-01-01 
+08:00:00.0, windowEnd=1970-01-01 08:00:10.0}
+```
+
+  很明显，这仍然是[0, 10s) 的窗口，在之前计数值 3 的基础上继续叠加，更新统计结果为4。所以允许窗口处理迟到数据之后，相当于窗口有了一段等待时间，在这期间所有的迟到数据都会立即触发窗口计算，更新之前的结果。
+
+因此，之后时间戳为 8000 的数据到来，同样会立即输出：
+
+```
+result> UrlViewCount{url='./home,', count=5, windowStart=1970-01-01 
+08:00:00.0, windowEnd=1970-01-01 08:00:10.0}
+```
+
+  我们设置窗口等待的时间为 1 分钟，所以当时间推进到 10000 + 60 * 1000 = 70000 时，窗口就会真正被销毁。此前的所有迟到数据可以直接更新窗口的计算结果，而之后的迟到数据已经无法整合进窗口，就只能用侧输出流来捕获了。需要注意的是，这里的“时间”依然是由水位线来指示的，所以时间戳为 70000 的数据到来，并不会触发窗口的销毁；当时间戳为 72000的数据到来，水位线推进到了 72000 – 2 * 1000 = 70000，此时窗口真正销毁关闭，之后再来的迟到数据就会输出到侧输出流了：
+
+```
+late> Event{user='Alice,', url='./home,', timestamp=1970-01-01 08:00:08.0}
+```
+
