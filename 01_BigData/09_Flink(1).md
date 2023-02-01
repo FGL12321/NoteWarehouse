@@ -1325,6 +1325,8 @@ public class TransformMapTest {
 }
 ```
 
+![image-20221215125247502](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221215125247502.png)
+
 **2. 过滤（filter）**
 
 ```java
@@ -1373,6 +1375,8 @@ public class TransformFilterTest {
     }
 }
 ```
+
+![image-20221215125602332](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221215125602332.png)
 
 **3. 扁平映射（flatMap）**
 
@@ -1433,11 +1437,13 @@ public class TransFlatmapTest {
 }
 ```
 
+![image-20221215125822572](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221215125822572.png)
+
 ### 5.3.2 聚合算子（Aggregation）
 
 **1.按键分区（keyBy）**
 
-  keyBy 是聚合前必须要用到的一个算子。keyBy 通过指定键（key），可以将一条流从逻辑上划分成不同的分区（partitions）。这里所说的分区，其实就是并行处理的子任务，也就对应着任务槽（task slot）。
+  **keyBy 是聚合前必须要用到的一个算子**。keyBy 通过指定键（key），可以将一条流从逻辑上划分成不同的分区（partitions）。这里所说的分区，其实就是并行处理的子任务，也就对应着任务槽（task slot）。
 
   基于不同的 key，流中的数据将被分配到不同的分区中去，这样一来，所有具有相同的 key 的数据，都将被发往同一个分区，那么下一步算子操作就将会在同一个 slot中进行处理了。
 
@@ -1546,7 +1552,7 @@ public class TransPojoAggregationTest {
 
 **3.归约聚合**
 
-  如果说简单聚合是对一些特定统计需求的实现，那么 reduce 算子就是一个一般化的聚合统计操作了。从大名鼎鼎的 MapReduce 开始，我们对 reduce 操作就不陌生：它可以对已有的数据进行归约处理，把每一个新输入的数据和当前已经归约出来的值，再做一个聚合计算。
+  如果说简单聚合是对一些特定统计需求的实现，那么 reduce 算子就是一个一般化的聚合统计操作了。从大名鼎鼎的 MapReduce 开始，我们对 reduce 操作就不陌生：==它可以对已有的数据进行归约处理，把每一个新输入的数据和当前已经归约出来的值，再做一个聚合计算。==
 
 ```java
 package com.fang.chapter05;
@@ -1596,12 +1602,15 @@ public class TransformReduceTest {
             }
         });
 
-         result.print();
+         clicksByUser.print("1");
+         result.print("2");
          env.execute();
     }
 }
 
 ```
+
+![image-20221215131152255](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221215131152255.png)
 
 ### 5.3.3 用户自定义函数（UDF）
 
@@ -1642,30 +1651,32 @@ public class TransFunctionUDFTest {
 **2.匿名函数（Lambda）**
 
 ```java
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 public class TransFunctionLambdaTest {
-         public static void main(String[] args) throws Exception {
-         StreamExecutionEnvironment env = 
-        StreamExecutionEnvironment.getExecutionEnvironment();
-        
-         env.setParallelism(1);
-         
-         DataStreamSource<Event> clicks = env.fromElements(
-             new Event("Mary", "./home", 1000L),
-             new Event("Bob", "./cart", 2000L)
-         );
-         
-         //map 函数使用 Lambda 表达式，返回简单类型，不需要进行类型声明
-         DataStream<String> stream1 = clicks.map(event -> event.url);
-         stream1.print();
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env =
+                StreamExecutionEnvironment.getExecutionEnvironment();
 
-         env.execute();
-     }
+        env.setParallelism(1);
+
+        DataStreamSource<Event> clicks = env.fromElements(
+                new Event("Mary", "./home", 1000L),
+                new Event("Bob", "./cart", 2000L)
+        );
+
+        //map 函数使用 Lambda 表达式，返回简单类型，不需要进行类型声明
+        DataStream<String> stream1 = clicks.map(event -> event.url);
+        stream1.print();
+
+        env.execute();
+    }
 }
 ```
+
+![image-20221215131431053](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221215131431053.png)
 
 **3.富函数类（Rich Function Classes）**
 
@@ -1865,7 +1876,7 @@ public class ShuffleTest2 {
 
 **4.广播（broadcast）**
 
-  这种方式其实不应该叫做“重分区”，因为经过广播之后，数据会在不同的分区都保留一份，可能进行重复处理。可以通过调用DataStream的broadcast()方法，将输入数据复制并发送到下游算子的所有并行任务中去。
+  这种方式其实不应该叫做“重分区”，因为经过==广播之后，数据会在不同的分区都保留一份，==可能进行重复处理。可以通过调用DataStream的broadcast()方法，将输入数据复制并发送到下游算子的所有并行任务中去。
 
 ```java
 package com.fang.chapter05;
@@ -1898,7 +1909,7 @@ public class ShuffleTest {
 
 **5.全局分区**
 
-  全局分区也是一种特殊的分区方式。这种做法非常极端，通过调用.global()方法，会将所有的输入流数据都发送到下游算子的第一个并行子任务中去。这就相当于强行让下游任务并行度变成了 1，所以使用这个操作需要非常谨慎，可能对程序造成很大的压力。
+  全局分区也是一种特殊的分区方式。这种做法非常极端，通过调用.global()方法，会==将所有的输入流数据都发送到下游算子的第一个并行子任务中去==。这就相当于强行让下游任务并行度变成了 1，所以使用这个操作需要非常谨慎，可能对程序造成很大的压力。
 
 ```
 package com.fang.chapter05;
@@ -2702,6 +2713,7 @@ public class WindowTest {
 
         //从元素中读取数据
         SingleOutputStreamOperator<Event> stream = env.addSource(new ClinkSource())
+            
                 .assignTimestampsAndWatermarks(WatermarkStrategy.<Event>forBoundedOutOfOrderness(Duration.ZERO)
                         .withTimestampAssigner(new SerializableTimestampAssigner<Event>() {
                             @Override
@@ -2736,9 +2748,9 @@ public class WindowTest {
 
 **（2）聚合函数（AggregateFunction）**
 
-  ReduceFunction 可以解决大多数归约聚合的问题，但是这个接口有一个限制，就是聚合状态的类型、输出结果的类型都必须和输入数据类型一样。这就迫使我们必须在聚合前，先将数据转换（map）成预期结果类型；而在有些情况下，还需要对状态进行进一步处理才能得到输出结果，这时它们的类型可能不同，使用 ReduceFunction 就会非常麻烦。
+  ReduceFunction 可以解决大多数归约聚合的问题，但是这个接口有一个限制，就是聚合状态的类型、输出结果的类型都必须和输入数据类型一样。这就迫使我们必须在==聚合前，先将数据转换（map）成预期结果类型；==而在有些情况下，还需要对状态进行进一步处理才能得到输出结果，这时它们的类型可能不同，使用 ReduceFunction 就会非常麻烦。
 
-  Flink 的 Window API 中的 aggregate 就提供了这样的操作。直接基于 WindowedStream 调用.aggregate()方法，就可以定义更加灵活的窗口聚合操作。这个方法需要传入一个AggregateFunction 的实现类作为参数。AggregateFunction 在源码中的定义如下：
+  Flink 的 Window API 中的 aggregate 就提供了这样的操作。==直接基于 WindowedStream 调用.aggregate()方法，就可以定义更加灵活的窗口聚合操作。这个方法需要传入一个AggregateFunction 的实现类作为参数。==AggregateFunction 在源码中的定义如下：
 
 ```java
 public interface AggregateFunction<IN, ACC, OUT> extends Function, Serializable 

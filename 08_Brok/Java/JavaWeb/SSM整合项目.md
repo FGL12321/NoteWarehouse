@@ -133,7 +133,7 @@
 
 ### 三、主要算法或流程描述
 
-![img](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/wps10.jpg) 
+<img src="https://pic-1313413291.cos.ap-nanjing.myqcloud.com/wps10.jpg" alt="img" style="zoom:150%;" /> 
 
  
 
