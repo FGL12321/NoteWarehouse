@@ -1,5 +1,7 @@
 [TOC]
 
+思维导图：https://kdocs.cn/l/ct3P5sGyUTj4
+
 # 第1章:F link简介
 
 ## 1.1Flink是什么
@@ -199,8 +201,7 @@ public class BatchWordCount {
             for (String word : words) {
                 out.collect(Tuple2.of(word, 1L));
             }
-        })
-                .returns(Types.TUPLE(Types.STRING, Types.LONG));
+        }).returns(Types.TUPLE(Types.STRING, Types.LONG));
 
         //4.按照world进行分组
         UnsortedGrouping<Tuple2<String, Long>> wordAndOneGroup = wordAndOneTuple.groupBy(0);
@@ -267,6 +268,8 @@ public class StreamWordCount {
 }
 
 ```
+
+![image-20230203131232092](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230203131232092.png)
 
 2. 读取文本流
 

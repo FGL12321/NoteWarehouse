@@ -1061,3 +1061,73 @@ public class PrototypePatternDemo {
 
 
 
+# 15.Java8新特性Lambad表达式
+
+#### 1.匿名函数实现
+
+```java
+public class lambda {
+    public static void main(String[] args) {
+
+        Cal cal=new Cal(){
+
+            @Override
+            public int add(int a,int b){
+                return a+b;
+            }
+        };
+
+        System.out.println(cal.add(1,2));
+
+    }
+    interface  Cal{
+        int add(int a,int b);
+    }
+}
+```
+
+![image-20230220130125449](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230220130125449.png)
+
+#### 2.最简单的Lambda
+
+```java
+public class Main1 {
+    public static void main(String[] args) {
+        
+
+        Cal c=(int a,int b)->{return a+b;};
+        System.out.println(c.add(1,2));
+
+    }
+    interface  Cal{
+        int add(int a,int b);
+    }
+}
+```
+
+![image-20230220130507557](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230220130507557.png)
+
+#### 3.其他简单实例
+
+```java
+// 1. 不需要参数,返回值为 5  
+() -> 5  
+  
+// 2. 接收一个参数(数字类型),返回其2倍的值  
+x -> 2 * x  
+  
+// 3. 接受2个参数(数字),并返回他们的差值  
+(x, y) -> x – y  
+  
+// 4. 接收2个int型整数,返回他们的和  
+(int x, int y) -> x + y  
+  
+// 5. 接受一个 string 对象,并在控制台打印,不返回任何值(看起来像是返回void)  
+(String s) -> System.out.print(s)
+```
+
+#### 4.Lambda表达式语法
+
+（参数列表）->{方法体}
+
+![image-20230220131015208](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230220131015208.png)

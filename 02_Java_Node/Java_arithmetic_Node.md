@@ -1,5 +1,28 @@
 [TOC]
 
+> [算法基础知识](D:\04_学习笔记\02_Java_Node\刷题总结.md)
+
+
+
+## 基础算法
+
+#### 1.求最大公约数（辗转相除法）和最小公倍数
+
+```java
+public static int gcd (int a,int b) {
+      int c;
+      while (b!=0) {
+        c = a%b;
+        a = b;
+        b = c;
+	  }
+    return a;
+}
+
+//最小公倍数-两数相乘后除以最大公约数
+a*b/gcd(a,b)
+```
+
 ## 第一章：数组
 
 #### 1.删除排序数组中的重复项
@@ -1063,7 +1086,7 @@ public boolean hasCycle(ListNode head) {
 }
 ```
 
-## 第四章：树
+## 第四章：树（递归）
 
 #### 27.二叉树的最大深度
 
@@ -1211,52 +1234,344 @@ class Solution {
 }
 ```
 
+#### L2-004 这是二叉搜索树吗？ (25 分)
+
+#### L2-006 树的遍历 (25 分) 
+
+#### L2-011 玩转二叉树 (25 分) 
+
+#### L2-035 完全二叉树的层序遍历 (25 分) 
+
 ## 第五章：排序
 
-#### 1.冒泡排序
+>排序算法的稳定性：能保证排序前两个相等的数其在序列的前后位置顺序与排序后它们的前后位置顺序一致。从而在一定程度上减少了排序的时间
 
-![在这里插入图片描述](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/20201209193006204.gif)
+#### 1.冒泡排序（稳定）
+
+两个for循环，比数组大小-1次，每次比较数组大小-1次，从数组的第一个数字开始与下一个比较，如果第一个比第二个大则交换，否则第二个跟第三个比较
+
+![动图](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/v2-33a947c71ad62b254cab62e5364d2813_b.webp)
 
 ```java
-public class MaoPaoPX {
+import java.util.Arrays;
 
-	public static void main(String[] args) {
-		int []arr= {3,2,8,4,7};//创建数组
-		System.out.println("排序前");
-		showArr(arr);//打印显示排序前
-		//循环实现冒泡排序
-		for(int i=0;i<arr.length-1;i++) {
-			for(int j=0;j<arr.length-i-1;j++) {
-				if(arr[j]>arr[j+1]) {
-					int temp=arr[j];
-					arr[j]=arr[j+1];
-					arr[j+1]=temp;
-				}
-				
-			}
-		}
-		System.out.println("排序后");
-		showArr(arr);
-	}
-	//打印方法
-	private static void showArr(int []arr) {
-		//增强for循环打印
-		for(int a:arr) {
-			System.out.print(a+"\t");
-		
-		}
-		System.out.println();
-		
-	}
+public class Main {
+    public static void main(String[] args) {
+        int[] nums={1,2,7,9,5,42,3,6,7,8};
 
+
+        for (int i = 0; i <nums.length-1; i++) {            //小于元素的个数
+            for (int j = 0; j <nums.length-i-1 ; j++) {    //每一次排序完成后就少进行一次替换
+                while(nums[j]>nums[j+1]){
+                    int tmp=nums[j+1];
+                    nums[j+1]=nums[j];
+                    nums[j]=tmp;
+                }
+            }
+        }
+
+        System.out.println(Arrays.toString(nums));
+
+    }
+}
+
+```
+
+
+
+#### 2.选择排序（不稳定）
+
+![动图](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/v2-1c7e20f306ddc02eb4e3a50fa7817ff4_b.webp)
+
+将数组中的数据遍历，先拿第一个进行比较，看后面的有没有比这更小的，有的话交换，没有就第二个进行比，依次比较，一共需要比数组大小-1次
+
+```java
+import java.util.Arrays;
+
+public class SelectSort {
+    public static void main(String[] args) {
+        //模拟数据
+        int[] array = {52,63,14,59,68,35,8,67,45,99};
+        selectSort(array);
+        System.out.println(Arrays.toString(array));
+
+    }
+
+    /**
+     * 首先在未排序序列中找到最小（大）元素，存放到排序序列的起始位置。
+     * 再从剩余未排序元素中继续寻找最小（大）元素，然后放到已排序序列的末尾。
+     * 重复第二步，直到所有元素均排序完毕。
+     *
+     */
+    public static void selectSort(int[] arr){
+        for(int i = 0; i < arr.length-1; i++){ //最后一次排序完成两个值的排序
+
+            int min = i; //先设置一个最小的值
+
+            for(int j = i+1; j <arr.length ;j++){   //在里面找一个更小的值
+                if(arr[j]<arr[min]){
+                    min = j;  //如果有比上一个值更小就进行替换
+                }
+            }
+
+            if(min!=i){
+                int temp = arr[i];
+                arr[i] = arr[min];
+                arr[min] = temp;
+            }
+        }
+    }
+}
+
+```
+
+
+
+#### 3.插入排序（稳定）
+
+![动图](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/v2-f87ad7d8ad54379dd81f02fcf9b91f49_b.webp)
+
+将数组中的数据遍历，先拿第一个进行比较，看后面的有没有比这更小的，有的话交换，没有就第二个进行比，依次比较，一共需要比数组大小-1次
+
+```java
+import java.util.Arrays;
+
+public class Main {
+    public static void main(String[] args) {
+        //以下情况需要进行改进
+          int[] nums1={10,12,13,2,4,6,8};
+
+//        for (int i = 1; i <nums1.length ; i++) {
+//            for (int j = i; j>0 ; j--) {
+//                if(nums1[j]<nums1[j-1]){
+//                    int tmp=nums1[j-1];
+//                    nums1[j-1]=nums1[j];
+//                    nums1[j]=tmp;
+//                }
+//            }
+//        }
+//
+
+
+        //对插入排序的改进情况
+        for (int i = 1; i <nums1.length ; i++) {  //起始值必须为1
+            int tmp=nums1[i]; //需要进行插入的那个值
+            int j;
+            for (j = i; j>0&&nums1[j-1]>tmp ; j--) {  //其实值为i，原因是要比较当前元素之前的内容
+                nums1[j]=nums1[j-1];
+            }
+            nums1[j]=tmp;
+        }
+        System.out.println(Arrays.toString(nums1));
+    }
+}
+
+```
+
+
+
+#### 4.归并排序（稳定）
+
+![动图](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/v2-cdda3f11c6efbc01577f5c29a9066772_b.webp)
+
+归并排序是稳定排序，它也是一种十分高效的排序，能利用完全二叉树特性的排序一般性能都不会太差。java中Arrays.sort()采用了一种名为TimSort的排序算法，就是归并排序的优化版本。从上文的图中可看出，每次合并操作的平均时间复杂度为O(n)，而完全二叉树的深度为|log2n|。总的平均时间复杂度为O(nlogn)。而且，归并排序的最好，最坏，平均时间复杂度均为O(nlogn)。
+
+```java
+import java.util.Arrays;
+
+public class Main {
+
+    public static void main(String[] args) {
+        int[] arr = {11,44,23,67,88,65,34,48,9,12};
+        int[] tmp = new int[arr.length];    //新建一个临时数组存放
+        mergeSort(arr,0,arr.length-1,tmp); //传入四个参数  先将数组进行切分
+        System.out.println(Arrays.toString(arr));
+    }
+
+    //将数组进行拆分
+    public static void mergeSort(int[] array,int left,int right,int[] tmp){
+        //递归条件
+        if (left>=right) {
+            return;
+        }
+        int mid=(left+right)/2;
+        mergeSort(array,left,mid,tmp); //对左边进行拆分
+        mergeSort(array,mid+1,right, tmp);//对右面进行拆分
+        //当所有的拆分完成后需要进行合并
+        merge(array, left,mid,right ,tmp );
+    }
+
+    //对数组进行合并
+    public static void merge(int[] array,int left,int mid,int right,int[] tmp){
+        //先确定几个值
+        int i=0;//用于tmp数组的索引
+        int j=left; //左起始点
+        int k=mid+1;//右起始点
+
+
+        while(j<=mid&&k<=right){      //当其中有一个不满足条件的时候说明，后面的值就不用比较直接放入临时数组中
+            if(array[j]<array[k]){    //找出当前值较小的那一个放入临时数组中
+                tmp[i++]=array[j++];
+            }else {
+                tmp[i++]=array[k++];
+            }
+        }
+
+        //如果左边有剩余就直接放入临时数组中
+        while (j<=mid){
+            tmp[i++]=array[j++];
+        }
+
+        //如果右边有剩余就直接放入临时数组中
+        while (k<=right){
+            tmp[i++]=array[k++];
+        }
+
+        //将临时数组中的值放到原数组中
+        for (int t=0;t<i;t++){
+            array[left+t]=tmp[t];
+        }
+    }
+}
+
+```
+
+
+
+#### 5.快速排序（不稳定）
+
+![动图](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/v2-c411339b79f92499dcb7b5f304c826f4_b.webp)
+
+特点就是递归，通过一个中间数，将该数的左右分别排序好，先找一个**基准值**，一般为数组大小/2，左边找到一个比基准值大的数，右边找到一个比基准值小的数，然后进行交换，算完之后左边的都为比基准值小的，右边都为比基准值大的，但不能保证他们是有序的，所以还需要对左右生成的数据进行二次排序
+
+```java
+import java.util.Arrays;
+
+public class QuickSort {
+    public static void quickSort(int[] arrays,int left,int right){
+
+        //设计递归结束条件
+        if(left>right){
+            return;
+        }
+        //定义新的左右指针
+        int i=left;
+        int j=right;
+
+        //确定基准位置
+        int tmp=arrays[i];
+        //设置缓存
+        int h;
+
+        //让大于基准数的数放在右面
+        //让小于基准数的数放在左面
+        while(i<j){
+            //让右指针先走
+            //为什么先让右指针移动，只有先进行右指针的运动，才可以保证在相遇处的数字小于基准数
+            while(i<j&&arrays[j]>=tmp){
+                j--;
+            }
+
+            //左指针继续走
+            while(i<j&&arrays[i]<=tmp){
+                i++;
+            }
+
+            //符合条件的情况下
+            if(i<j){
+                h=arrays[i];
+                arrays[i]=arrays[j];
+                arrays[j]=h;
+            }
+        }
+
+        //记得把基准数放回来
+        arrays[left]=arrays[i];
+        arrays[i]=tmp;
+
+
+        //继续进行递归
+        quickSort(arrays, left, j-1);
+        quickSort(arrays, j+1, right);
+
+    }
+
+
+    public static void main(String[] args){
+        int[] arr={2,4,5,21,23,43,54,65,7,687,543,1,12};
+        quickSort(arr, 0, arr.length-1);
+        System.out.println(Arrays.toString(arr));
+    }
 }
 ```
 
 
 
-## 天梯赛
+#### L2-009 抢红包 (25 分)
 
-#### L1-003 个位数统计
+#### L2-015 互评成绩 (25 分) 
+
+#### L2-019 悄悄关注 (25 分) 
+
+#### L2-021 点赞狂魔 (25 分) 
+
+#### L2-027 名人堂与代金券 (25 分) 
+
+#### L2-034 口罩发放 (25 分) 
+
+
+
+## 第六章：栈
+
+#### L2-032 彩虹瓶 (25 分) 
+
+#### L2-033 简单计算器 (25 分) 
+
+## 第七章：队列
+
+## 第八章：图
+
+## 第十章：搜索算法
+
+#### L2-016 愿天下有情人都是失散多年的兄妹 (25 分) 
+
+#### L2-020 功夫传人 (25 分) 
+
+#### L2-030 冰岛人 (25 分) 
+
+#### L2-031 深入虎穴 (25 分) 
+
+## 第十一章：查找算法
+
+#### 1.二分查找
+
+```java
+class Solution {
+    public int searchInsert(int[] nums, int target) {
+        //定义左指针和右指针
+        int left=0,right=nums.length-1;
+
+        while(left<=right){
+            int mid=(left+right)/2;
+            if(nums[mid]==target){
+                return mid;
+            }else if(nums[mid]<target){
+                left=mid+1;
+            }else{
+                right=mid-1;
+            }
+        }
+        return left;
+
+    }
+}
+```
+
+
+
+## 天梯赛（基础题目）
+
+#### L1-003 个位数统计（数组字符串）
 
 ![image-20230114174839683](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230114174839683.png)
 
@@ -1323,31 +1638,6 @@ public class Main {
 
 
 
-#### L1-004 计算摄氏温度
-
-![image-20230114174903307](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230114174903307.png)
-
-```java
-package 天梯赛.L1_04_计算摄氏温度;
-
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        int num=scanner.nextInt();
-
-        System.out.println("Celsius= "+5*(num-32)/9);
-
-    }
-}
-
-```
-
-
-
-#### L1-005 考试座位号
-
 ![image-20230114174918001](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230114174918001.png)
 
 ```java
@@ -1385,7 +1675,7 @@ public class Main {
 
 
 
-#### L1-006 连续因子
+#### L1-006 连续因子（求因子）
 
 ![image-20230131165000451](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230131165000451.png)
 
@@ -1427,106 +1717,7 @@ public class Main {
 
 ```
 
-#### L1-007 念数字
-
-![image-20230131172414330](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230131172414330.png)
-
-```
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        String s=scanner.next();
-
-
-        int[] chars=new int[s.length()];
-
-        for (int i = 0; i < chars.length; i++) {
-            chars[i]=s.charAt(i)-'0';
-        }
-
-        for (int j = 0; j < chars.length; j++) {
-
-            if (j==chars.length-1){
-                switch (chars[j]){
-                    case -3:
-                        System.out.print("fu");
-                        break;
-                    case 0:
-                        System.out.print("ling");
-                        break;
-                    case 1:
-                        System.out.print("yi");
-                        break;
-                    case 2:
-                        System.out.print("er");
-                        break;
-                    case 3:
-                        System.out.print("san");
-                        break;
-                    case 4:
-                        System.out.print("si");
-                        break;
-                    case 5:
-                        System.out.print("wu");
-                        break;
-                    case 6:
-                        System.out.print("liu");
-                        break;
-                    case 7:
-                        System.out.print("qi");
-                        break;
-                    case 8:
-                        System.out.print("ba");
-                        break;
-                    case 9:
-                        System.out.print("jiu");
-                        break;
-                }
-            }
-            if(j!=chars.length-1){
-                switch (chars[j]){
-                    case -3:
-                        System.out.print("fu ");
-                        break;
-                    case 0:
-                        System.out.print("ling ");
-                        break;
-                    case 1:
-                        System.out.print("yi ");
-                        break;
-                    case 2:
-                        System.out.print("er ");
-                        break;
-                    case 3:
-                        System.out.print("san ");
-                        break;
-                    case 4:
-                        System.out.print("si ");
-                        break;
-                    case 5:
-                        System.out.print("wu ");
-                        break;
-                    case 6:
-                        System.out.print("liu ");
-                        break;
-                    case 7:
-                        System.out.print("qi ");
-                        break;
-                    case 8:
-                        System.out.print("ba ");
-                        break;
-                    case 9:
-                        System.out.print("jiu ");
-                        break;
-                }
-            }
-
-        }
-    }
-}
-```
+0131172414330](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230131172414330.pn
 
 #### L1-008 求整数段和
 
@@ -1600,26 +1791,73 @@ public class Main {
 }
 ```
 
-#### L1-012 计算指数
+#### L1-011 A-B 
 
-![image-20230201164827519](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230201164827519.png)
+![image-20230202165249022](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230202165249022.png)
 
-```Java
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        int s=scanner.nextInt();
+    public static void main(String[] args) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String s=in.readLine();
+        String s2=in.readLine();
 
-        int a=1;
-        for (int i = 0; i < s; i++) {
-            a=a*2;
+        char[] chars=new char[s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            chars[i]=s.charAt(i);
         }
-        System.out.println("2"+"^"+s+" = "+a);
+
+        boolean c=true;
+
+        for (int j = 0; j < s.length(); j++) {
+            c=true;
+            for (int i = 0; i < s2.length(); i++) {
+                if(chars[j]==s2.charAt(i)){
+                    c=false;
+                }
+            }
+            if(c!=false){
+                System.out.print(chars[j]);
+            }
+        }
     }
 }
 
+```
+
+第二种方法：
+
+```java
+import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main1 {
+
+    public static void main(String[] args) throws IOException {
+
+        BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
+
+        String s=in.readLine(); //第一行字母
+        String b=in.readLine(); //第二行字母
+        char[] bs=b.toCharArray(); //将第二行字母放到字符数组中
+        String news=s;   //对第一行字母重新赋值
+
+        for (int i = 0; i < b.length(); i++) {
+            String c = String.valueOf(bs[i]); //char转化为string
+            news=news.replace(c, "");
+        }
+        System.out.println(news);
+
+    }
+
+}
 ```
 
 #### L1-013 计算阶乘和
@@ -1652,38 +1890,6 @@ public class Main {
             a--;
         }
         return sum;
-    }
-}
-
-```
-
-
-
-#### L1-015 跟奥巴马一起画方块
-
-![image-20230201170046840](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230201170046840.png)
-
-```Java
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        double a=scanner.nextInt();
-        String s=scanner.next();
-
-
-
-        for (int i = 0; i <Math.round(a/2) ; i++) {
-            if (i != 0) {
-                System.out.println();
-            }
-
-            for (int j = 0; j <a ; j++) {
-                System.out.print(s);
-            }
-        }
-
     }
 }
 
@@ -1792,8 +1998,6 @@ public class Main1 {
 
 ```
 
-
-
 #### L1-017 到底有多二
 
 ![image-20230131163911102](C:\Users\90632\AppData\Roaming\Typora\typora-user-images\image-20230131163911102.png)
@@ -1831,51 +2035,6 @@ public class Main{
 
         //输出
         System.out.printf("%.2f%%",count*mul/(num.length()+length));
-    }
-}
-```
-
-
-
-#### L1-018 大笨钟
-
-![image-20230114175009637](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230114175009637.png)
-
-```java
-import java.util.Scanner;
-public class Main {
-    public static void main(String[] args) {
-        Scanner scanner=new Scanner(System.in);
-        String s=scanner.next();
-
-        String[] s1=s.split(":");
-
-        int hour=Integer.parseInt(s1[0]); //字符串转数字
-        int min=Integer.parseInt(s1[1]);
-
-        if(hour>=0&&hour<12){
-            System.out.print("Only "+s+".  Too early to Dang.");
-        }
-
-        if(hour==12&&min==0){
-            System.out.print("Only "+s+".  Too early to Dang.");
-        }
-
-        if(hour==12&&min>0){
-            System.out.print("Dang");
-        }
-
-        if(hour>=13){
-            if(min==0){
-                for (int i = 0; i < hour-12; i++) {
-                    System.out.print("Dang");
-                }
-            }else {
-                for (int i = 0; i < hour-11; i++) {
-                    System.out.print("Dang");
-                }
-            }
-        }
     }
 }
 ```
@@ -1929,28 +2088,878 @@ public class Main {
 }
 ```
 
-#### L1-074 两小时学完C语言
+#### L1-020 帅到没朋友
 
-![image-20230114175031444](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230114175031444.png)
+![image-20230205112312611](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112312611.png)
 
 ```java
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
-public class Main
-{
-    public static void main(String[] args)
-    {   
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        int k = sc.nextInt();
-        int m = sc.nextInt();
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        int num=scanner.nextInt();
+        ArrayList<Integer> arrays1=new ArrayList<>();
+        //接收朋友圈
+        for (int i = 0; i<num; i++) {
+            int num1=scanner.nextInt();
+            if(num1!=1){
+                for (int j = 0; j <num1; j++) {
+                    int h=scanner.nextInt();
+                    if(!arrays1.contains(h)){
+                        arrays1.add(h);
+                    }
+                }
+            }else{
+                int p=scanner.nextInt();
+            }
+        }
 
-        System.out.println(n - k * m);     
+        //接收要判断的内容并进行去重
+        int num2=scanner.nextInt();
+        ArrayList<Integer> arrays2=new ArrayList<>();
+        for (int i = 0; i <num2 ; i++) {
+            int z=scanner.nextInt();
+            if(!arrays2.contains(z)){
+                arrays2.add(z);
+            }
+        }
+
+        //用于输出时作出判断
+        for (int i = 0; i <arrays1.size() ; i++) {
+                if(arrays2.contains(arrays1.get(i))){
+                    arrays2.remove(arrays1.get(i));
+                }
+        }
+
+        if (arrays2.size()== 0) {
+            System.out.print("No one is handsome");
+        }else{
+            for (int i = 0; i < arrays2.size()-1; i++) {
+                System.out.printf("%05d",arrays2.get(i));
+                System.out.print(" ");
+            }
+            System.out.printf("%05d",arrays2.get(arrays2.size()-1));
+        }
     }
 }
 ```
 
-## 基础知识
+#### L1-023 输出GPLT
 
-![image-20230119104608992](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230119104608992.png)
+![image-20230205112413008](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112413008.png)
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Locale;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String s=in.readLine();
+
+        s=s.toUpperCase(Locale.ROOT);
+        System.out.println(s);
+
+        int[] array=new int[4];
+
+        for (int i = 0; i < s.length(); i++) {
+            if(s.charAt(i)=='G'){
+                array[0]++;
+            }else if(s.charAt(i)=='P'){
+                array[1]++;
+            }else if(s.charAt(i)=='L'){
+                array[2]++;
+            }else if(s.charAt(i)=='T'){
+                array[3]++;
+            }
+        }
+
+        for (int i = 0; i < 10000000; i++) {
+            if(array[0]!=0){
+                System.out.print("G");
+                array[0]--;
+            }
+            if (array[1]!=0){
+                System.out.print("P");
+                array[1]--;
+            }
+            if (array[2] != 0) {
+                System.out.print("L");
+                array[2]--;
+            }
+             if (array[3] != 0) {
+                System.out.print("T");
+                array[3]--;
+            }
+        }
+    }
+}
+```
+
+#### L1-025 正整数A+B
+
+![image-20230205112458447](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112458447.png)
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        String s=scanner.nextLine();
+        s = s.trim();
+        String[] num=s.split("\\s+");
+        boolean a=true;
+        boolean d=true;
+        int num1=0;
+        int num2=0;
+
+        if(num.length>2){
+            d=false;
+        }
+        System.out.println(num.length);
+
+        try {
+            num1=Integer.valueOf(num[0]);
+            if(num1<1||num1>1000){
+                a=false;
+            }
+
+        }catch (Exception e){
+           a=false;
+        }
+
+
+        try {
+            num2=Integer.valueOf(num[1]);
+            if(num2<1 || num2>1000){
+                d=false;
+            }
+
+        }catch (Exception e){
+            d=false;
+        }
+
+        if(a!=false&&d!=false){
+            int num3=num1+num2;
+            System.out.println(num1+" + "+num2+" = "+num3);
+        }
+
+
+
+        if(a==false&&d!=false){
+            System.out.println("?"+" + "+num2+" = "+"?");
+        }
+
+        if(a!=false&&d==false){
+            System.out.println(num1+" + "+"?"+" = "+"?");
+        }
+
+        if(a==false&&d==false){
+            System.out.println("?"+" + "+"?"+" = "+"?");
+        }
+    }
+}
+```
+
+#### L1-027 出租
+
+![image-20230205112545695](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112545695.png)
+
+```
+import java.util.HashSet;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        String s=scanner.next();
+
+        HashSet<Integer> set=new HashSet<>();
+
+        //将数字放入集合中
+        for (int i = 0; i < s.length(); i++){
+            int b=s.charAt(i)-'0';
+            set.add(b);
+        }
+
+        //逆序输出
+        int[] array1=new int[set.size()];
+        int c=set.size()-1;
+        for (int a:set) {
+            array1[c--]=a;
+        }
+
+        //输出号码中包含的数字
+        System.out.print("int[] arr = new int[]{");
+        for (int i = 0; i < set.size()-1 ; i++) {
+            System.out.print(array1[i]+",");
+        }
+        System.out.println(array1[array1.length-1]+"};");
+
+        //输出对应号码的索引
+        System.out.print("int[] index = new int[]{");
+        for (int i = 0; i <s.length() ; i++) {
+            for (int j = 0; j < array1.length; j++) {
+
+                int z=s.charAt(i)-'0';
+
+                if(z==array1[j] && i!=s.length()-1){
+                    System.out.print(j+",");
+                }
+                if(z==array1[j]&&i==s.length()-1){
+                    System.out.print(j+"};");
+                }
+            }
+        }
+    }
+}
+
+```
+
+
+
+#### L1-028 判断素数
+
+![image-20230205112704080](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112704080.png)
+
+```java
+import java.util.Scanner;
+//素数，只有一和他本身可以除尽的数字
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        int num1=scanner.nextInt();
+
+
+        boolean a=true;
+        for (int i = 0; i <num1 ; i++) {
+            a=true;
+            int num=scanner.nextInt();
+            if (num == 1||num==0) {
+                System.out.println("No");
+                a=false;
+            }
+
+
+
+            for (int j = 2; j <=Math.sqrt(num); j++) {
+                if(num%j==0){
+                    System.out.println("No");
+                    a=false;
+                    break;
+                }
+            }
+
+            if(a==true){
+                System.out.println("Yes");
+            }
+        }
+    }
+}
+```
+
+
+
+#### L1-030 一帮一
+
+![image-20230205112752864](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230205112752864.png)
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+
+        int num=scanner.nextInt();
+
+        String[] string1=new String[num/2];
+        String[] string2=new String[num/2];
+        String s=scanner.nextLine();
+
+        for (int i = 0; i < num/2; i++) {
+            string1[i]=scanner.nextLine();
+        }
+
+        for (int i = 0; i < num/2; i++) {
+            string2[i]=scanner.nextLine();
+        }
+
+        for (int i = 0; i <num/2; i++) {
+            for (int j = num/2-1; j >=0; j--) {
+                if(!string1[i].substring(0,1).equals(string2[j].substring(0,1)) && string2[j]!="NO"){
+
+                    System.out.println(string1[i].substring(2)+":"+string2[j].substring(2));
+
+                    string2[j]="NO";
+
+                    break;
+                }
+            }
+        }
+    }
+}
+
+```
+
+#### L1-033 出生年
+
+![image-20230213160747421](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213160747421.png)
+
+```
+import java.util.HashSet;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        String s1 =scanner.next(); //出生年份
+        int num2 =scanner.nextInt(); //几位数字不相同
+        int index=0;
+        String s =s1;
+
+        HashSet<Integer> set=new HashSet<>();
+
+        while(true){
+            if(s.length()<4){
+                s="0"+s;
+            }
+
+            int long1=s.length();
+            for (int i = 0; i <long1 ; i++) {
+                set.add(s.charAt(i)-'0');
+            }
+
+            index=long1-(long1-set.size()); //多少个不重复的
+
+            if (index == num2) {
+                System.out.print(Integer.valueOf(s)-Integer.valueOf(s1)+" ");
+                System.out.printf("%04d",Integer.valueOf(s));
+                break;
+            }
+
+            Integer num3=Integer.valueOf(s)+1;
+            s=num3.toString();
+            set.clear();
+        }
+    }
+}
+
+```
+
+另外一种方法：
+
+```
+import java.util.Scanner;
+
+public class Main2 {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int y = sc.nextInt();
+        int n = sc.nextInt();
+        int x = 0;
+        int year =0;
+        int b[] = new int [4];
+        for(int i=y;;i++) {
+            int count=1;
+            int m=0;
+            b[0] = i/1000;//千位
+            b[1] = i%1000/100;//百位
+            b[2] = i%100/10;//十位
+            b[3] = i%10;//个位
+            if (b[0]!=b[1] && b[0]!=b[2] && b[0]!=b[3]) count++;
+            if (b[1]!=b[2] && b[1]!=b[3]) count++;
+            if (b[2]!=b[3]) count++;
+            if (count==n){
+                year = i;
+                break;//找到满足的数字后跳出循环输出结果
+            }
+        }
+        System.out.print(year-y+" ");
+        System.out.printf("%04d",year);
+    }
+}
+```
+
+
+
+#### L1-034 点赞
+
+![image-20230213160934877](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213160934877.png)
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+
+        int num=scanner.nextInt();
+
+        int[] arrays=new int[1001];
+        int max=0;
+        int index=0;
+        for (int i = 0; i <num ; i++) {
+            int a=scanner.nextInt();
+            for (int j = 0; j < a; j++) {
+
+                int b=scanner.nextInt();
+
+                arrays[b]++;
+
+                if(arrays[b]>max){
+                    index=b;
+                    max=arrays[b];
+                }else if (arrays[b] == max && b>index) {
+                    index=b;
+                }
+            }
+        }
+
+        System.out.println(index+" "+max);
+    }
+}
+
+```
+
+
+
+#### L1-039 古风排版
+
+![image-20230213161018610](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213161018610.png)
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+        int num=scanner.nextInt();
+        String s0=scanner.nextLine();
+        String s=scanner.nextLine();
+        int num1=0;
+
+        if (s.length()%num==0) {
+            num1=s.length()/num;
+        }
+        if (s.length()%num!=0) {
+            num1=s.length()/num+1;
+        }
+
+        int index=0;
+
+        String[][] chars=new String[num][num1];
+
+        for (int j = num1-1; j >=0 ; j--) {
+            for (int i = 0; i < num; i++) {
+                chars[i][j]=" ";
+                if(index<s.length()){
+                    chars[i][j]= String.valueOf(s.charAt(index));
+                    index++;
+                }
+            }
+        }
+
+        for (int i = 0; i <num ; i++) {
+            if(i!=0){
+                System.out.println();
+            }
+            for (int j = 0; j <num1 ; j++) {
+                System.out.print(chars[i][j]);
+            }
+        }
+
+    }
+}
+```
+
+
+
+#### L1-043 阅览室
+
+![image-20230213161126548](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213161126548.png)
+
+![image-20230213161139446](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213161139446.png)
+
+```java
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner=new Scanner(System.in);
+
+        int num=scanner.nextInt();
+        String s1=scanner.nextLine();
+        int index=0;
+
+
+        while (index<num){
+            ArrayList<String> strings=new ArrayList<>();
+            int count=0; //记录次数
+            int time=0;  //记录时间
+            while(true){
+                String s=scanner.nextLine();
+                strings.add(s);
+                if (s.substring(0,1).equals("0")) {
+                    break;
+                }
+
+            }
+
+            for (int i = 0; i < strings.size(); i++) {
+                for (int j = i+1; j < strings.size()-1; j++) {
+                    String book1=strings.get(i).substring(0,1);
+                    String book2=strings.get(j).substring(0,1);
+                    String tai1=strings.get(i).substring(2,3);
+                    String tai2=strings.get(j).substring(2,3);
+
+                    //计算时间和次数
+                    if(book1.contains(book2) &&!tai1.equals(tai2)){
+                        count++;
+                        int hour1=Integer.valueOf(strings.get(i).substring(4,6));
+                        int min1=Integer.valueOf(strings.get(i).substring(7,9));
+
+                        int hour2=Integer.valueOf(strings.get(j).substring(4,6));
+                        int min2=Integer.valueOf(strings.get(j).substring(7,9));
+
+                        time=time+((hour2*60+min2)-(hour1*60+min1));
+                    }
+                }
+            }
+
+            if (count!=0){
+                if (time%count==0){
+                    System.out.println(count+" "+time/count);
+                }else if(time%count!=0){
+                    int time1=(time/count)+1;
+                    System.out.println(count+" "+time1);
+                }
+            } else if(count==0){
+                System.out.println(0+" "+0);
+            }
+            index++;
+        }
+    }
+}
+
+```
+
+
+
+#### L1-046 整除光棍
+
+![image-20230213161217167](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230213161217167.png)
+
+
+
+```java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main1 {
+
+    public static void main(String[] args) throws NumberFormatException, IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        int x = Integer.parseInt(in.readLine());
+        int s = 0, cnt = 0;
+        // 这一步的目的是避免s<x时s/x的结果为0
+        while (s < x) {
+            s = s * 10 + 1;
+            cnt++;
+        }
+        int i;
+        // 逐渐增加光棍的位数，直到可以整除x为止
+        for (i = cnt;; i++) {
+            System.out.print(s / x);
+            if (s % x == 0) {
+                break;
+            }
+            // 模拟除法取余数
+            s = s % x;
+            // 除数是由"1"组成的数，因此借位下来的也是"1"，即余数连接“1”的形式
+            s = s * 10 + 1;
+        }
+        System.out.println(" " + i);
+    }
+}
+```
+
+
+
+## 蓝桥杯
+
+### 2021
+
+#### L01_ASC（打卡题）
+
+```
+public class L01_ASC {
+    public static void main(String[] args) {
+        System.out.println("76");
+    }
+}
+```
+
+#### L02_卡片（数组模拟）
+
+```
+import java.util.Scanner;
+
+public class L02_卡片 {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+
+        int[] array=new int[10];
+
+        //将所有值赋值为2021
+        for (int i = 0; i < array.length; i++) {
+            array[i]=2021;
+        }
+
+        String s="1";
+        boolean a=false;
+
+        while(true){
+            for (int i = 0; i < s.length(); i++) {
+                int num=s.charAt(i)-'0';
+                if (array[num] != 0) {
+                    array[num]--;
+                }else{
+                    System.out.println(Integer.valueOf(s)-1);
+                    a=true;
+                    break;
+                }
+            }
+
+            if (a == true) {
+                break;
+            }
+
+            Integer num1=Integer.valueOf(s);
+            num1=num1+1;
+            s=num1.toString();
+        }
+        scan.close();
+    }
+}
+```
+
+#### L03_直线（模拟）
+
+```
+import java.util.HashSet;
+
+public class L03_直线 {
+    public static void main(String[] args) {
+
+        String[] strings=new String[420];
+        //1.创建HashSet存放斜率
+        HashSet<String> hashSet=new HashSet<>();
+
+        //2.将所有点放到数组中
+        int k=0;
+        for (int i = 0; i <20; i++) {
+            for (int j = 0; j <21 ; j++) {
+                    strings[k++]=i+":"+j;
+            }
+        }
+
+        //3.进行斜率计算
+        //System.out.println(strings[]);
+        for (int i = 0; i <420; i++) {
+            String[] chars1=strings[i].split(":");
+            int x1=Integer.valueOf(chars1[0]);
+            int y1=Integer.valueOf(chars1[1]);
+
+            for (int j = i+1; j <420; j++) {
+                String[] chars2=strings[j].split(":");
+                int x2=Integer.valueOf(chars2[0]);
+                int y2=Integer.valueOf(chars2[1]);
+
+                //斜率计算
+                int y3=y1-y2;
+                int x3=x1-x2;
+
+                //同一条竖线的情况存入
+                if(x3==0){
+                    hashSet.add("x="+x1);
+                    continue;
+                }
+
+                //求斜率
+                int yueshu=yue(y3,x3);
+                String K=y3/yueshu+"/"+x3/yueshu;
+
+                //y=kx+b; b=y-kx; 对B进行处理
+                int jieju=y1*x3-x1*y3;
+                int jiejuyue=yue(jieju,x3);
+                String B=jieju/jiejuyue+"/"+x3/jiejuyue;
+                hashSet.add(K+":"+B);
+
+            }
+
+        }
+        System.out.println(hashSet.size());
+    }
+
+    //辗转相除求最大公约数
+    static int yue(int x4,int y4){
+        int tmp=0;
+        while(y4!=0){
+            tmp=x4%y4;
+            x4=y4;
+            y4=tmp;
+        }
+        return x4;
+    }
+}
+```
+
+#### L04_货物摆放（求因数）
+
+```java
+import java.util.ArrayList;
+
+public class L04_货物摆放 {
+    public static void main(String[] args) {
+
+        long l1=2021041820210418l;
+        int count=0;
+        ArrayList<Long> arrayList=new ArrayList<>();
+
+        for (long i = 1; i < Math.sqrt(l1); i++) {
+            if(l1%i==0){
+                arrayList.add(i);
+                if(l1/i!=i){
+                    arrayList.add(l1/i);
+                }
+            }
+        }
+        for (long a:arrayList) {
+            for (long b:arrayList) {
+                for (long c:arrayList) {
+                    if (a*b*c ==l1) {
+                        count++;
+                    }
+                }
+            }
+        }
+        System.out.println(count);
+    }
+}
+```
+
+#### L05路径——图_动规
+
+#### L06_时间显示（时间转化求余）
+
+```
+import java.util.Scanner;
+
+public class L06_时间显示 {
+    public static void main(String[] args) {
+        //1秒等于1000毫秒
+        Scanner scan = new Scanner(System.in);
+
+        long s= scan.nextLong();
+
+        long miao=s/1000;//转化为秒
+        long miao1=miao%60;
+
+        long fen=miao/60;//转化为分
+        long fen1=fen%60;
+
+        long shi=fen/60;//转化为时
+        long shi1=shi%24;
+
+        System.out.printf("%02d", shi1);
+        System.out.print(":");
+        System.out.printf("%02d", fen1);
+        System.out.print(":");
+        System.out.printf("%02d", miao1);
+    }
+}
+```
+
+#### L07_最少砝码（数学规律）
+
+```
+import java.util.Scanner;
+//找规律
+public class L07_最少砝码 {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        long l1=scan.nextLong();
+        int ce=1;
+        int num=1;
+        while(ce<l1){
+            ce=ce*3+1;
+            num++;
+        }
+        System.out.println(num);
+        scan.close();
+    }
+}
+```
+
+#### L08_杨辉三角（40%）（超大值）
+
+```
+public class L08_杨辉三角 {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        int num=scan.nextInt();
+
+        if(num==1){
+            System.out.println(1);
+        }else{
+            //实现一个杨辉三角
+            int[][] array=new int[num+1][num+1];
+
+            //完成1的填充
+            for (int i = 0; i < array.length; i++) {
+                array[i][0]=1;
+                array[i][i]=1;
+            }
+
+
+            int count=3;
+            boolean tf=true;
+            //完成其他值的填充 从第三行的第二个值进行入手
+            for (int i = 2; i < array.length ; i++) { //控制行
+                count++;
+                for (int j = 1; j < i ; j++) { //控制列
+                    array[i][j]=array[i-1][j-1]+array[i-1][j];
+                    count++;
+                    if(array[i][j]==num){
+                        System.out.println(count);
+                        return;
+                    }
+                }
+
+                count++;
+            }
+        }
+        scan.close();
+    }
+}
+```
+
+### 2022
+
+#### L01_星期计算（打卡题）
+
+#### L02_山（大数运算）
+
+#### L03_字符统计（数组模拟）
+
+#### L04_最少刷题数（数学规律）
+
+#### L05_求阶乘（数学规律，大数）

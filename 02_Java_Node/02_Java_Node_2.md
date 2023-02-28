@@ -1008,7 +1008,7 @@ class Number implements Runnable{
 
 ---
 
-### 5.6新增线程的创建方式
+## 5.6新增线程的创建方式
 
 :red_circle:**新增线程创建方式一：实现Callable接口**
 
@@ -1615,6 +1615,15 @@ new TreeSet(com);
 **Math类**
 Java.lang.Math提供了一系列静态方法用于科学计算。其方法的参数和返回值类型一般为double型。
 
+1. **abs(x)：返回x的绝对值。**
+2. ceil(x)：返回大于或等于x的最小整数。
+3. floor(x)：返回小于或等于x的最大整数。
+4. **max(x,y)：返回x和y中的较大值。**
+5. **min(x,y)：返回x和y中的较小值。**
+6. pow(x,y)：返回x的y次方。
+7. sqrt(x)：返回x的平方根。
+8. **round(float a)：四舍五入**
+
 ## 6.7  BigInteger与BigDecimal
 
 BigInteger类、BigDecimal类
@@ -1973,8 +1982,6 @@ ElementType.TYPE_USE **表示该注解能写在使用类型的任何语句中。
 
 ​       iterator()：返回迭代器对象，用于集合遍历
 
-z
-
 ## 8.3  Iterator迭代器接口   
 
 GOF给迭代器模式的定义为：提供一种方法访问一个**容器(container)对象**中各个元 
@@ -2040,7 +2047,6 @@ public class IteratorTest {
         while (iterator1.hasNext()){
             System.out.println(iterator1.next());
         }
-
     }
 }
 ```
@@ -2070,6 +2076,7 @@ public class foreachtest {
             System.out.println(obj);
         }
     }
+    
     @Test
     public void test2(){
         int[] arr=new int[]{1,2,3,4,5,6,7};
