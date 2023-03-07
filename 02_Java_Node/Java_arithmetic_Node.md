@@ -1717,7 +1717,7 @@ public class Main {
 
 ```
 
-0131172414330](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230131172414330.pn
+
 
 #### L1-008 求整数段和
 
