@@ -428,6 +428,16 @@ http://hadoop102:19888/jobhistory
 
 ==如果节点都正常启动，页面无法访问，检查hosts文件是否修改，如果无误，可以重写启动，并进行测试==
 
+```
+echo $PATH
+/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/root/.local/bin:/home/zxb/bin:/opt/module/jdk1.8.0_212/bin
+
+echo $PATH
+/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/root/.local/bin:/home/zxb/bin:/opt/module/jdk1.8.0_212/bin
+```
+
+
+
 # 2.0✈️ zookeeper安装
 
 ## 2.1解压安装
