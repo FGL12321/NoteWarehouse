@@ -327,22 +327,22 @@ class MyException extends RuntimeException{
 
 ## 5.1基本概念理解
 
-**（1）**`程序`：是为了完成特定任务，用某组语言编写的一组指令的集合。即指==一段静态代码==，静态对象。
+**（1）**`程序`：是为了完成特定任务，用某组语言编写的一组指令的集合。即指 ==一段静态代码== ，静态对象。
 
 ---
 
-**（2）**`进程 `：是程序一次执行过程，或是**==正在运行的一段程序==**。是一个**==动态的过程==**：有其自身的产生，存在，消亡的过程。`-----生命周期`
+**（2）**`进程 `：是程序一次执行过程，或是** ==正在运行的一段程序== **。是一个**==动态的过程==**：有其自身的产生，存在，消亡的过程。`-----生命周期`
 
 - 程序是静态的，进程是动态的。
-- **==进程作为资源分配的单位==**，系统在运行时会为每个进程分配不同的内存区域
+- ** ==进程作为资源分配的单位== **，系统在运行时会为每个进程分配不同的内存区域
 
 ---
 
 **（3）**`线程`:进程可进一步细化为线程，是一个程序内部的一条执行路径。
 
-- 若一个进程同一时间==并行==执行多个线程，就是支持多线程的。     
-- **==线程作为调度和执行的单位，每个线程拥有独立的运行栈和程序计数器(pc)，==**线程切换的开销小。
-- 一个进程的多个线程共享相同的内存单元/内存地址空间——》他们从同一个堆中分配对象，可以访问相同的变量和对象。这使得线程间通信更加边界，高效。但多个线程操作共享资源的系统资源可能就会带来==**安全隐患。**==
+- 若一个进程同一时间 ==并行== 执行多个线程，就是支持多线程的。     
+- **==线程作为调度和执行的单位，每个线程拥有独立的运行栈和程序计数器(pc)，== **线程切换的开销小。
+- 一个进程的多个线程共享相同的内存单元/内存地址空间——》他们从同一个堆中分配对象，可以访问相同的变量和对象。这使得线程间通信更加边界，高效。但多个线程操作共享资源的系统资源可能就会带来 ==**安全隐患。**==
 
 ---
 
@@ -358,11 +358,9 @@ class MyException extends RuntimeException{
 - 程序需要实现一些需要等待的任务时，如用户输入，文件读写操作，网络操作，搜索等。
 - 需要一些后台运行的程序时。
 
-## 5.2线程的创建使用
+## 5.2线程的创建的四种方式
 
-**线程的创建**
-
-:large_orange_diamond:**Thread类的介绍**
+**Thread类的介绍**
 
 - Java语言的JVM允许程序运行多个线程，它通过Java.lang.Thread类来体现。
 
@@ -391,21 +389,21 @@ class MyException extends RuntimeException{
 
       - **static Thread currentThread():** 返回当前线程。
 
-        `在Thread子类中就 是this，通常用于主线程和Runnable实现类`
+      - 在Thread子类中就 是this，通常用于主线程和Runnable实现类
 
       - **static void yield()**：线程让步 
 
-        `暂停当前正在执行的线程，把执行机会让给优先级相同或更高的线程 `
+        暂停当前正在执行的线程，把执行机会让给优先级相同或更高的线程 
 
-        `若队列中没有同优先级的线程，忽略此方法`
+        若队列中没有同优先级的线程，忽略此方法
 
-      - **join()** **：**当某个程序执行流中调用其他线程的 join() 方法时，调用线程将 被阻塞，直到 join() 方法加入的 join 线程执行完为止 。`低优先级的线程也可以获得执行		`	
+      - **join()** **：**当某个程序执行流中调用其他线程的 join() 方法时，调用线程将被阻塞，直到 join() 方法加入的 join 线程执行完为止   低优先级的线程也可以获得执行		
 
       - **static void sleep(long millis)**：(指定时间:毫秒) 
 
-        `令当前线程在指定时间段内放弃对CPU控制,使其他线程有机会被执行,时间到后重排队.`
+        令当前线程在指定时间段内放弃对CPU控制,使其他线程有机会被执行,时间到后重排队.
 
-        `抛出InterruptedException异常`
+        抛出InterruptedException异常
 
       - **stop():** 强制线程生命期结束，不推荐使用 
 
@@ -477,25 +475,23 @@ public class ThreadMethodTest {
 
 
 
-***
-
-**:black_medium_square:线程的调度：**
+**线程的调度：**
 
 调度策略：抢占式：高优先级的线程抢占CPU
 
 **:black_small_square:Java的调度算法**
 
-:artificial_satellite:同优先级线程组成先进先出队列(先到先服务）使用时间片策略
+  同优先级线程组成先进先出队列(先到先服务）使用时间片策略
 
-:artificial_satellite:对高优先级使用优先调度的抢占式策略
+  对高优先级使用优先调度的抢占式策略
 
 **:black_small_square:线程的优先等级划分：**
 
-:one:MAX_PRIORITY:10
+  MAX_PRIORITY:10
 
-:two:MIN_PRIORITY:1
+  MIN_PRIORITY:1
 
-:three:NORM_PRIORITY:5
+  NORM_PRIORITY:5
 
 ==直接定义在start()==
 
@@ -508,19 +504,13 @@ System.out.println(Thread.currentThread().getPriority()+":"+ i);//获取优先�
 
 **:black_small_square:涉及的方法：**
 
-:artificial_satellite:getPriority():返回线程优先值。
+getPriority():返回线程优先值。
 
-:artificial_satellite:setPriority(int newPriority):改变线程的优先级
+setPriority(int newPriority):改变线程的优先级
 
-:red_circle:==优先级高的情况下，并非一定会优先执行==
+:red_circle: ==优先级高的情况下，并非一定会优先执行==
 
-
-
----
-
-
-
-:trident:**继承Thread类**
+### 1.继承Thread类
 
 1. 定义子类继承Thread的类的子类
 2. 子类中重写Thread类中的run方法，==将此线程执行的操作声明在方法中==
@@ -558,9 +548,9 @@ public class ThreadTest {
 }
 ```
 
----
 
-:trident: **实现Runnable接口**    
+
+### 2.实现Runnable接口
 
 1. 定义子类实现Runnable接口。
 2. 子类中重写Runnable接口中的run方法。
@@ -600,19 +590,17 @@ public class ThreadTest1 {
 
 
 
----
+==**创建线程的两种方式的比较：**==
 
-==:horse_racing:**创建线程的两种方式的比较：**==
-
-:one:开发当中优先选择：实现Runnable接口的方式
+**1.开发当中优先选择：**实现Runnable接口的方式
 
 ​     原因：1.实现的方式没有类的单继承的局限性
 
-​                 2.实现的方式更适合来处理==多个线程有共享数据==的情况
+​                  2.实现的方式更适合来处理==多个线程有共享数据==的情况
 
-:two:联系：Thread类本身也实现了Runnable类的接口
+**2.联系：** Thread类本身也实现了Runnable类的接口
 
- 相同点：两种方式都需要重写run方法，将线程执行的逻辑声明在run()方法中。
+**3.相同点：** 两种方式都需要重写run方法，将线程执行的逻辑声明在run()方法中。
 
 ---
 
@@ -632,19 +620,129 @@ public class ThreadTest1 {
 
 :black_circle:形象理解：兔死狗烹，鸟尽弓藏
 
+
+
+
+
+
+
+### **3.实现Callable接口**
+
+**与使用Runnable相比，Callable功能更强大一些**
+
+:small_orange_diamond:相比run()方法可以有返回值
+
+:small_orange_diamond:方法可以抛出异常
+
+:small_orange_diamond:支持泛型的返回值
+
+需要借助FutureTesk类，比如获取返回结果
+
+```java
+/*
+* 创建线程的方式三：实现Callable接口------JDK新增5.0
+*
+* 如何理解实现Callable接口的方式创建多线程，比实现Runnable接口强大。
+*1.call()方法是可以有返回值的
+*2.call()方法可以抛出异常，被外面的操作捕获，获取异常信息
+*3.Callable是支持泛型的
+* */
+
+import Java.util.concurrent.Callable;
+import Java.util.concurrent.ExecutionException;
+import Java.util.concurrent.FutureTask;
+
+
+public class ThreadNew {
+    public static void main(String[] args) {
+        //3.创建Callable接口实现类的对象
+        NumThread numThread=new NumThread();
+        //4.将此Callable接口实现类的对象作为参数传递到FutureTast构造器中，创建FutureTask的对象
+        FutureTask task = new FutureTask(numThread);
+        //5.将FutureTask的对象作为参数传递道Thread类的构造器中，创建Thread对象，并调用start()
+        Thread thread = new Thread(task);
+        thread.start();
+
+        Object sum= null;
+        try {
+            //6.获取Callable中的Callable中call方法的返回值
+            //get()返回值即为FutureTask构造器参数Callable实现类重写的call()的返回值
+            sum = task.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        System.out.println("总和为："+sum);
+    }
+}
+//1.创建一个实现Callable接口的实现类
+class NumThread implements Callable {
+    //2.实现call方法，将此线程需要执行的操作声明在call()方法中。
+    @Override
+    public Object call() throws Exception {
+        int sum=0;
+        for (int i = 1; i <=100 ; i++) {
+            if(i%2==0){
+                System.out.println(i);
+                sum +=i;
+            }
+        }
+        return sum;
+    }
+}
+```
+
+### 4.使用线程池的方式
+
+:small_orange_diamond:**背景：**经常创建和销毁，使用量特别大的资源，比如并发情况下的线程对性能影响很大
+
+:small_orange_diamond:**思路：**提前创建好多个线程，放入线程池汇总，使用时直接获取，使用完放回池中。可以避免频繁创建销毁，         	实现重复利用。类似生活汇总的公共交通工具。
+
+**:small_orange_diamond:好处：**提高相应速度  降低资源消耗  便于线程管理
+
+```java
+//创建并使用多线程的第四种方法：使用线程池
+class MyThread implements Runnable {
+
+	@Override
+	public void run() {
+		for (int i = 1; i <= 100; i++) {
+			System.out.println(Thread.currentThread().getName() + ":" + i);
+		}
+	}
+
+}
+
+public class ThreadPool {
+	public static void main(String[] args) {
+		// 1.调用Executors的newFixedThreadPool(),返回指定线程数量的ExecutorService
+		ExecutorService pool = Executors.newFixedThreadPool(10);
+		// 2.将Runnable实现类的对象作为形参传递给ExecutorService的submit()方法中，开启线程
+		// 并执行相关的run()
+		pool.execute(new MyThread());//适用于Callable
+		pool.execute(new MyThread());
+		pool.execute(new MyThread());
+		// 3.结束线程的使用
+		pool.shutdown();
+
+	}
+}
+```
+
+![1641629843278](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1641629843278.png)
+
 ## 5.3线程的生命周期
 
-:red_circle:**==五种状态==**
+:red_circle:**五种状态**
 
-:one:新建：==Thread类或其子类的对象被声明并创建时==，新生的线程对象处于新建状态
+:one:新建：Thread类或其子类的对象被声明并创建时，新生的线程对象处于新建状态
 
-:two:就绪：==线程被start()后==，进入线程队列==等待CPU时间片==，此时它已具备了运行的条件，只是没分配到CPU资源
+:two:就绪：线程被start()后，进入线程队列等待CPU时间片，此时它已具备了运行的条件，只是没分配到CPU资源
 
-:three:运行：当就绪的线程被调度并==获得CPU资源时==,便进入运行状态， run()方法定义了线程的操作和功能
+:three:运行：当就绪的线程被调度并获得CPU资源时,便进入运行状态， run()方法定义了线程的操作和功能
 
-:four:阻塞：被人为挂起或执行输入输出操作时，让出==CPU 并临时中 止自己的执行==，进入阻塞状态 
+:four:阻塞：被人为挂起或执行输入输出操作时，让出CPU 并临时中 止自己的执行，进入阻塞状态 
 
-:five:死亡：线程==完成了它的全部工作==或线程被==提前强制性地中止或出现异常导致结束==
+:five:死亡：线程完成了它的全部工作或线程被提前强制性地中止或出现异常导致结束
 
 ---
 
@@ -654,13 +752,19 @@ public class ThreadTest1 {
 
 ---
 
-## 5.4线程的同步
+## 5.4线程的同步（两种锁）
+
+**synchronized锁**
+
+**Lock锁**
+
+
 
 :red_circle:**概念**
 
-​        即当有==一个线程在对内存进行操作==时，==其他线程都不可以对这个内存地址进行操作==，直到==该线程完成操作， 其他线程才能对该内存地址进行操作==，而其他线程又处于==等待状态==，实现线程同步的方法有很多，临界区对象就是其中一种。 
+​        即当有一个线程在对内存进行操作时，其他线程都不可以对这个内存地址进行操作，直到该线程完成操作， 其他线程才能对该内存地址进行操作，而其他线程又处于等待状态，实现线程同步的方法有很多，临界区对象就是其中一种。 
 
----
+
 
 :red_circle:**如何进行线程同步**
 
@@ -685,17 +789,17 @@ synchronize(/*同步监视器*/){
 
 ---
 
-**:triangular_flag_on_post:同步方法：**
+**同步方法：**
 
-如果操作共享的数据的代码完整的声明在一个方法中，我们不妨将此方法声明同步的。
+  如果操作共享的数据的代码完整的声明在一个方法中，我们不妨将此方法声明同步的。
 
-在方法名上增加一个`synchronized`
+  在方法名上增加一个`synchronized`
 
-总结：
+**总结：**
 
-:japanese_goblin:同步方法仍然涉及到同步监视器，只是不需要我们显式的声明
+同步方法仍然涉及到同步监视器，只是不需要我们显式的声明
 
-:japanese_goblin:非静态的同步方法，同步监视器是==this==
+非静态的同步方法，同步监视器是==this==
 
 ​     静态的同步方法，同步监视器是==当前类本身==
 
@@ -756,17 +860,94 @@ class Window extends Thread{
 }
 ```
 
----
+
+
+**:red_circle:Lock锁的介绍**
+
+:small_red_triangle_down:从JDK 5.0开始，Java提供了更强大的线程同步机制——==通过显式定义同 步锁对象来实现同步同步锁使用==Lock对象充当。 
+
+:small_red_triangle_down:Java.util.concurrent.locks.Lock接口是控制多个线程对共享资源进行访问的 工具。锁提供了对共享资源的独占访问，每次只能有一个线程对Lock对象加锁，线程开始访问共享资源之前应先获得Lock对象。
+
+:small_red_triangle_down:ReentrantLock 类实现了 Lock ，它==拥有与 synchronized 相同的并发性和 内存语义==，在实现线程安全的控制中，==较常用的是ReentrantLock，可以 显式加锁、释放锁==。
+
+
+
+**synchronized** **与** **Lock** **的对比** 
+
+1.Loc显式锁（手动开启和关闭锁，别忘记关闭锁），synchronized是隐式锁，出了作用域自动释放。
+
+2.Lock只有代码块锁，synchronized有代码块锁和方法锁
+
+3.使用Lock锁，JVM将花费较少的时间来调度线程，性能更好。并且具有更好的扩展性（提供更多的子类）
+
+```java
+import Java.util.concurrent.locks.ReentrantLock;
+
+/*
+* 解决线程安全的方式三：Lock锁---JDK5.0新增
+* 
+* 
+* */
+public class LockTest {
+    public static void main(String[] args) {
+        Window window = new Window();
+
+        Thread thread1 = new Thread(window);
+        Thread thread2 = new Thread(window);
+        Thread thread3 = new Thread(window);
+
+        thread3.start();
+        thread2.start();
+        thread1.start();
+    }
+    
+}
+
+class Window implements Runnable{
+    private int ticket=100;
+    //1.实例化ReentrantLock
+    private ReentrantLock lock =new ReentrantLock();
+
+    @Override
+    public void run() {
+        while (true){
+
+            try{
+                //2.调用lock方法
+                lock.lock();
+                if (ticket>0) {
+
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.println(Thread.currentThread().getName()+":票号为："+ticket);
+                    ticket--;
+                }else {
+                    break;
+                }
+            }finally {
+                //3.调用解锁的方法
+                lock.unlock();
+            }
+
+        }
+    }
+}
+
+```
 
 :red_circle:线程的死锁问题
 
-:trident:什么是死锁？
+什么是死锁？
 
 不同的线程分贝占用对方需要的同步资源不放弃，都在等待对方放弃自己需要的同步资源，就形成了线程的死锁。
 
 出现死锁后不会出现异常，不会出现提示，只是所有线程都处于阻塞状态，无法继续。
 
-:trident:如何避免死锁;
+如何避免死锁;
 
 专门的算法，原则
 
@@ -834,82 +1015,7 @@ public class ThreadTest {
 
 ---
 
-**:red_circle:Lock锁的介绍**
 
-:small_red_triangle_down:从JDK 5.0开始，Java提供了更强大的线程同步机制——==通过显式定义同 步锁对象来实现同步同步锁使用==Lock对象充当。 
-
-:small_red_triangle_down:Java.util.concurrent.locks.Lock接口是控制多个线程对共享资源进行访问的 工具。锁提供了对共享资源的独占访问，每次只能有一个线程对Lock对象加锁，线程开始访问共享资源之前应先获得Lock对象。
-
-:small_red_triangle_down:ReentrantLock 类实现了 Lock ，它==拥有与 synchronized 相同的并发性和 内存语义==，在实现线程安全的控制中，==较常用的是ReentrantLock，可以 显式加锁、释放锁==。
-
----
-
-**synchronized** **与** **Lock** **的对比** 
-
-1.Lock是==显式锁==（手动开启和关闭锁，别忘记关闭锁），synchronized是隐式锁,==出了作用域自动释放== 
-
-2.**Lock只有代码块锁，synchronized有代码块锁和方法锁** 
-
-3.使用Lock锁，==JVM将花费较少的时间来调度线程，性能更好。并且具有更好的扩展性==（提供更多的子类）
-
-```java
-import Java.util.concurrent.locks.ReentrantLock;
-
-/*
-* 解决线程安全的方式三：Lock锁---JDK5.0新增
-* 
-* 
-* */
-public class LockTest {
-    public static void main(String[] args) {
-        Window window = new Window();
-
-        Thread thread1 = new Thread(window);
-        Thread thread2 = new Thread(window);
-        Thread thread3 = new Thread(window);
-
-        thread3.start();
-        thread2.start();
-        thread1.start();
-    }
-    
-}
-
-class Window implements Runnable{
-    private int ticket=100;
-    //1.实例化ReentrantLock
-    private ReentrantLock lock =new ReentrantLock();
-
-    @Override
-    public void run() {
-        while (true){
-
-            try{
-                //2.调用lock方法
-                lock.lock();
-                if (ticket>0) {
-
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    System.out.println(Thread.currentThread().getName()+":票号为："+ticket);
-                    ticket--;
-                }else {
-                    break;
-                }
-            }finally {
-                //3.调用解锁的方法
-                lock.unlock();
-            }
-
-        }
-    }
-}
-
-```
 
 ## 5.5线程的通信
 
@@ -917,7 +1023,7 @@ class Window implements Runnable{
 
  线程与线程之间不是相互独立的个体，它们彼此之间需要相互通信和协作。
 
-​       线程是操作==系统调度的最小单位==，有自己的栈空间，可以按照既定的代码逐步的执行，但是如果每个线程间都孤立的运行，那就会造资源浪费。所以在现实中，我们需要这些线程间可以按照指定的规则共同完成一件任务，所以这些==线程之间就需要互相协调，这个过程被称为线程的通信==。 
+​       线程是操作系统调度的最小单位，有自己的栈空间，可以按照既定的代码逐步的执行，但是如果每个线程间都孤立的运行，那就会造资源浪费。所以在现实中，我们需要这些线程间可以按照指定的规则共同完成一件任务，所以这些线程之间就需要互相协调，这个过程被称为线程的通信。 
 
 ---
 
@@ -933,11 +1039,11 @@ class Window implements Runnable{
 
 :red_circle:线程通信涉及到的方法：
 
-`wait();`:一旦执行此方法，点前线程就进入阻塞状态，并释放同步监视器
+wait();:一旦执行此方法，当前线程就进入阻塞状态，并释放同步监视器
 
-`notify();`：一旦执行此方法，就会唤醒被wait的一个线程。如果多个线程被wait，就唤醒优先级高的
+notify();：一旦执行此方法，就会唤醒被wait的一个线程。如果多个线程被wait，就唤醒优先级高的
 
-`notifyAll();`：一旦执行此方法，就会唤醒所有被wait的方法。
+notifyAll();：一旦执行此方法，就会唤醒所有被wait的方法。
 
 
 
@@ -1000,123 +1106,21 @@ class Number implements Runnable{
 
 ==sleep()和wait()方法的异同==
 
-1.形同点：`一旦方法执行都可以是的当前线程进入阻塞状态。`
-2.不同点：
-`两个方法声明的位置不同：	Thread类声明在sleep(),Object类中声明wait()。`
-`调用的要求不同：sleep()可以在任何需要的场景下使用。wait()必须在同步代码块中使用。`
-`关于是否释放同步监视器：如果两个方法都使用在同步代码块或同步方法中sleep()不会释放锁`
+**1.相同点：**
 
----
+  一旦方法执行都可以使的当前线程进入阻塞状态
 
-## 5.6新增线程的创建方式
+**2.不同点：**
 
-:red_circle:**新增线程创建方式一：实现Callable接口**
+  两个方法声明的位置不同：	Thread类声明在sleep(),Object类中声明wait()。
 
----
+  调用的要求不同：sleep()可以在任何需要的场景下使用。
 
-**与使用Runnable相比，Callable功能更强大一些**
+  wait()必须在同步代码块中使用。
 
-:small_orange_diamond:相比run()方法可以有返回值
-
-:small_orange_diamond:方法可以抛出异常
-
-:small_orange_diamond:支持泛型的返回值
-
-需要借助FutureTesk类，比如获取返回结果
-
-```java
-/*
-* 创建线程的方式三：实现Callable接口------JDK新增5.0
-*
-* 如何理解实现Callable接口的方式创建多线程，比实现Runnable接口强大。
-*1.call()方法是可以有返回值的
-*2.call()方法可以抛出异常，被外面的操作捕获，获取异常信息
-*3.Callable是支持泛型的
-* */
-
-import Java.util.concurrent.Callable;
-import Java.util.concurrent.ExecutionException;
-import Java.util.concurrent.FutureTask;
+  关于是否释放同步监视器：如果两个方法都使用在同步代码块或同步方法中sleep()不会释放锁
 
 
-public class ThreadNew {
-    public static void main(String[] args) {
-        //3.创建Callable接口实现类的对象
-        NumThread numThread=new NumThread();
-        //4.将此Callable接口实现类的对象作为参数传递到FutureTast构造器中，创建FutureTask的对象
-        FutureTask task = new FutureTask(numThread);
-        //5.将FutureTask的对象作为参数传递道Thread类的构造器中，创建Thread对象，并调用start()
-        Thread thread = new Thread(task);
-        thread.start();
-
-        Object sum= null;
-        try {
-            //6.获取Callable中的Callable中call方法的返回值
-            //get()返回值即为FutureTask构造器参数Callable实现类重写的call()的返回值
-            sum = task.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        System.out.println("总和为："+sum);
-    }
-}
-//1.创建一个实现Callable接口的实现类
-class NumThread implements Callable {
-    //2.实现call方法，将此线程需要执行的操作声明在call()方法中。
-    @Override
-    public Object call() throws Exception {
-        int sum=0;
-        for (int i = 1; i <=100 ; i++) {
-            if(i%2==0){
-                System.out.println(i);
-                sum +=i;
-            }
-        }
-        return sum;
-    }
-}
-```
-
-**:red_circle:新增线程创建方式二：使用线程池的方式**
-
----
-
-:small_orange_diamond:**背景：**经常创建和销毁，使用量特别大的资源，比如并发情况下的线程对性能影响很大
-
-:small_orange_diamond:**思路：**提前创建好多个线程，放入线程池汇总，使用时直接获取，使用完放回池中。可以避免频繁创建销毁，         	实现重复利用。类似生活汇总的公共交通工具。
-
-**:small_orange_diamond:好处：**提高相应速度  降低资源消耗  便于线程管理
-
-```java
-//创建并使用多线程的第四种方法：使用线程池
-class MyThread implements Runnable {
-
-	@Override
-	public void run() {
-		for (int i = 1; i <= 100; i++) {
-			System.out.println(Thread.currentThread().getName() + ":" + i);
-		}
-	}
-
-}
-
-public class ThreadPool {
-	public static void main(String[] args) {
-		// 1.调用Executors的newFixedThreadPool(),返回指定线程数量的ExecutorService
-		ExecutorService pool = Executors.newFixedThreadPool(10);
-		// 2.将Runnable实现类的对象作为形参传递给ExecutorService的submit()方法中，开启线程
-		// 并执行相关的run()
-		pool.execute(new MyThread());//适用于Callable
-		pool.execute(new MyThread());
-		pool.execute(new MyThread());
-		// 3.结束线程的使用
-		pool.shutdown();
-
-	}
-}
-```
-
-![1641629843278](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/1641629843278.png)
 
 # 6.0Java的常用类
 
