@@ -1,8 +1,10 @@
 # 🚀大数据学习之路
 
- **🚀🚀🚀大数据学习路线🚊，主要内容为大数据技术内容如Hadoop🐘，蜂巢🐝，Hbase，Spark等内容，并包含数据仓库项目笔记等，👀👀👀并包含大量基础知识内容，如Java，SQL，Linux🎆🎆🎆**
+## 欢迎访问作者笔记网站：
 
-![image-20221020220541141](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20221020220541141.png)
+## https://frp-dog.top:28234/#/   (通过许可即可进入)
+
+![image-20230315103200828](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230315103200828.png)
 
 
 
