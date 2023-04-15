@@ -1,77 +1,90 @@
-# 🚀大数据学习之路
+<div align='center' style="hight:80px; wight:80px;">
+<img src="https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230415033228095.png" alt="github">
+</div>
+<h2 align="center">NoteWarehouse</h2>
+<h4 align="center">超全面笔记资源整合仓库、Java、Bigdata、AI、InterviewDoc</h4>
 
-## 欢迎访问作者笔记网站：
+<div><HR style="border:3 dotted #ff0033" width="100%" SIZE=3></div>
 
-## https://frp-dog.top:28234/#/   (通过许可即可进入)
-
-![image-20230315103200828](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/image-20230315103200828.png)
-
-
-
-## :black_nib: 前  言
-
-[大数据学习路线认知](https://kdocs.cn/l/cf418WcENzMl)
-
-
-
-## :bookmark_tabs:Node
-
-:one:[大数据生态笔记](https://github.com/FGL12321/Node/tree/main/01_BigData)
-
-* 1.1[集群环境配置](https://github.com/FGL12321/Node/blob/main/01_BigData/00_BigData_environment.md)
-* 1.2[Hadoop](https://github.com/FGL12321/Node/blob/main/01_BigData/01_Hadoop_Node.md)
-* 1.3[Zookeeper](https://github.com/FGL12321/Node/blob/main/01_BigData/02_Zookeeper_Node.md)
-* 1.4[Kafka](https://github.com/FGL12321/Node/blob/main/01_BigData/04_Kafka_Node.md)
-* 1.5[Hive](https://github.com/FGL12321/Node/blob/main/01_BigData/05_Hive_Node.md)
-* 1.6[HBase](https://github.com/FGL12321/Node/blob/main/01_BigData/06_HBase_Node.md)
-* 1.7[Scala](https://github.com/FGL12321/Node/blob/main/01_BigData/07_Scala_Node.md)
-* 1.8[Spark](https://github.com/FGL12321/Node/blob/main/01_BigData/08_Spark_Node.md)
-
-:two:[Java笔记](https://github.com/FGL12321/Node/tree/main/02_Java_Node)
-
-* 2.1 [Java程序基础](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
-* 2.2 [流程控制](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
-* 2.3 [面向对象](https://github.com/FGL12321/Node/blob/main/02_Java_Node/01_Java_Node_1.md)
-* 2.4 [异常处理](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.5 [多线程](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.6 [常用类](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.7 [枚举](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.8 [集合](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.9 [泛型](https://github.com/FGL12321/Node/blob/main/02_Java_Node/02_Java_Node_2.md)
-* 2.10 [IO流](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
-* 2.11 [网络编程](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
-* 2.12 [反射](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
-* 2.13 [设计模式](https://github.com/FGL12321/Node/blob/main/02_Java_Node/03_Java_Node_3.md)
-
-:three:[人工智能笔记](https://github.com/FGL12321/Node/tree/main/03_AI_Node)
-
-:four:[竞赛笔记](https://github.com/FGL12321/Node/tree/main/04_Competition_Node)
-
-:five:[JavaWeb笔记](https://github.com/FGL12321/Node/tree/main/05_JavaWeb_Node)
-
-:six:[大数据项目笔记](https://github.com/FGL12321/Node/tree/main/06_Project_Node)
-
-* [离线数据仓库](https://github.com/FGL12321/Node/tree/main/06_Project_Node/DataWarehouse)
-* [电信客服项目](https://github.com/FGL12321/Node/blob/main/06_Project_Node/%E9%80%9A%E8%AF%9D%E8%AE%B0%E5%BD%95%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/%E7%94%B5%E5%95%86%E5%AE%A2%E6%9C%8D%E6%A1%88%E4%BE%8B%E7%AC%94%E8%AE%B0.md)
-
-:seven:[SQL笔记](https://github.com/FGL12321/Node/tree/main/07_SQL_Node)
-
-:eight:[我的博客](https://github.com/FGL12321/Node/tree/main/08_Brok)
+<div align='center'>
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/repository/archive/master.zip"><img src="https://img.shields.io/badge/下载-download-yellowgreen" alt="github"></a>&emsp;&emsp;
+<a href="https://gitee.com/fanggaolei"><img src="https://img.shields.io/badge/%E4%BD%9C%E8%80%85-Fang%20GL-brightgreen" alt="github"></a>&emsp;&emsp;
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/stargazers"><img src="https://gitee.com/fanggaolei/learning-notes-warehouse/badge/star.svg?theme=dark"></a>
+&emsp;&emsp;
+<a href="https://gitee.com/y_project/RuoYi-Vue/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+</div>
 
 
 
-## :package:个人项目链接
-
-1.[电商离线数仓项目](https://gitee.com/fanggaolei/Data-Warehouse)
-
-2.[电信客服大数据项目](https://gitee.com/fanggaolei/ct-fang-project)
-
-3.[PIMS个人信息管理系统](https://gitee.com/fanggaolei/pims_code) 
-
-4.[SSM个员工信息管理系统](https://gitee.com/fanggaolei/SSM)
-
-5.[SSM教考分离系统](https://gitee.com/fanggaolei/OnlineExamSSM)
 
 
 
-# 🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+<br/>
+
+<div align='center'>
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/01_Java_Node/version-2"><img src="https://img.shields.io/badge/Java-java__node-yellow" alt="github"></a>&emsp;&emsp;
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/02_JavaWeb_Node"><img src="https://img.shields.io/badge/Java-java__web-blue" alt="github"></a>&emsp;&emsp;
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/03_Java_Framework"><img src="https://img.shields.io/badge/Java-Java__Framework-success" alt="github"></a>&emsp;&emsp;
+<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/04_SQL_Node"><img src="https://img.shields.io/badge/%F0%9F%92%8E-SQL-inactive" alt="github"></a>
+</div>
+
+
+
+
+
+<br/>
+
+<div align='center'><a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/05_BigData"><img src="https://img.shields.io/badge/%E5%A4%A7%E6%95%B0%E6%8D%AE-bigdata-brightgreen" alt="github"></a>&emsp;&emsp;<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/06_AI_Node"><img src="https://img.shields.io/badge/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD-AI-orange" alt="github"></a>&emsp;&emsp;<a href="https://gitee.com/fanggaolei/learning-notes-warehouse/tree/master/07_Books"><img src="https://img.shields.io/badge/%E9%9D%A2%E8%AF%95%E6%96%87%E6%A1%A3-Interviewdoc-yellowgreen" alt="github"></a> </div>
+
+
+
+### 1️⃣仓库内容架构
+
+![Java、](https://pic-1313413291.cos.ap-nanjing.myqcloud.com/Java%E3%80%81.svg)
+
+### 2️⃣项目链接
+
+&emsp;&emsp;1.[电商离线数仓项目](https://gitee.com/fanggaolei/Data-Warehouse)
+
+&emsp;&emsp;2.[电信客服大数据项目](https://gitee.com/fanggaolei/ct-fang-project)
+
+  3.[管家婆记账系统](https://gitee.com/fanggaolei/housekeeper-bookkeeping-system)
+
+&emsp;&emsp;4.[SSM教考分离系统](https://gitee.com/fanggaolei/OnlineExamSSM)
+
+  5.[SpringBoot旅游网项目](https://gitee.com/fanggaolei/tourism-website)
+
+&emsp;&emsp;6..[SSM个员工信息管理系统](https://gitee.com/fanggaolei/SSM)
+
+&emsp;&emsp;7.[PIMS个人信息管理系统](https://gitee.com/fanggaolei/pims_code)
+
+### 3️⃣ 云文档笔记
+
+&emsp;&emsp;1.[大数据学习路线认知](https://kdocs.cn/l/cf418WcENzMl)
+
+&emsp;&emsp;2.[Spring思维导图](https://kdocs.cn/l/cd7cDe2cvTVc)
+
+&emsp;&emsp;3.[SpringMVC思维导图](https://kdocs.cn/l/ckXku84jBTsS)
+
+&emsp;&emsp;4.[Mybatis思维导图](https://kdocs.cn/l/csqBb95MNXFD)
+
+&emsp;&emsp;5.[JSP思维导图](https://kdocs.cn/l/cncMMlq3Z6rA)
+
+### 4️⃣链接到我
+
+  1.[我的静态笔记网站]( https://fanggaolei.gitee.io/personal-blog/#/)
+
+  2.[CSDN博客](https://blog.csdn.net/m0_58022371?type=blog)
+
+### 5️⃣插件仓库
+
+  [插件仓库含教程](https://gitee.com/fanggaolei/plug-in-warehouse)
+
+### 6️⃣贡献者
+
+<a href="https://gitee.com/fanggaolei" target="_blank">
+<img width="70px" style="border-radius:100px" src="https://pic-1313413291.cos.ap-nanjing.myqcloud.com/e8438bbef1ae6b0b17e41437e143297.jpg"/>
+</a>
+
+
+
